@@ -7,38 +7,17 @@ export interface AppError extends Error {
   isOperational?: boolean;
 }
 
-export function errorHandler(
-  err: AppError,
-  _req: Request,
-  res: Response,
-  _next: NextFunction,
-) {
+export function errorHandler(err: AppError, req: Request, res: Response, _next: NextFunction) {
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal Server Error";
 
   if (NODE_ENV !== "production") {
-    logger.error("Unhandled error", {
-      message: err.message,
-      stack: err.stack,
-      statusCode,
-    });
+    logger.error("Unhandled error", { message: err.message, stack: err.stack, statusCode });
   }
 
-  // Ensure CORS headers are present even in error responses, but ONLY for trusted origins
-  const origin = _req.headers.origin;
-  if (typeof origin === "string" && origin.length > 0) {
-    const allowedOrigins = WEB_URL
-      ? WEB_URL.split(",")
-          .map((o) => o.trim().replace(/\/$/, ""))
-          .filter(Boolean)
-      : [];
-
-    const normalizedOrigin = origin.trim().replace(/\/$/, "");
-    const matchedOrigin =
-      normalizedOrigin !== "null"
-        ? allowedOrigins.find((o) => o === normalizedOrigin)
-        : undefined;
-
+  if (typeof req.headers.origin === "string" && req.headers.origin.length > 0) {
+    const allowedOrigins = WEB_URL ? WEB_URL.split(",").map((o) => o.trim().replace(/\/$/, "")).filter(Boolean) : [];
+    const matchedOrigin = allowedOrigins.find((o) => o === req.headers.origin!.trim().replace(/\/$/, ""));
     if (matchedOrigin) {
       res.setHeader("Access-Control-Allow-Origin", matchedOrigin);
       res.setHeader("Access-Control-Allow-Credentials", "true");
@@ -47,10 +26,7 @@ export function errorHandler(
 
   res.status(statusCode).json({
     success: false,
-    error: {
-      message,
-      ...(NODE_ENV !== "production" && { stack: err.stack }),
-    },
+    error: { message, ...(NODE_ENV !== "production" && { stack: err.stack }) },
   });
 }
 

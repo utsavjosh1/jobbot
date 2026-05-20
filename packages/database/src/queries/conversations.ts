@@ -105,16 +105,12 @@ export const conversationQueries = {
       .where(eq(conversations.id, id));
   },
 
-  async editMessage(
-    messageId: string,
-    content: string,
-    conversationId: string,
-  ) {
+  async editMessage(messageId: string, content: string, conversationId: string) {
     const [result] = await db
       .insert(messages)
       .values({
         conversation_id: conversationId,
-        role: "user",
+        role: "user" as const,
         content,
         metadata: { edited_from: messageId },
       })
@@ -132,14 +128,13 @@ export const conversationQueries = {
       .where(eq(messages.id, messageId));
   },
 
-  async getMessageVersions(parentMessageId: string, role: string) {
+  async getMessageVersions(parentMessageId: string, role: "user" | "assistant" | "system") {
     const result = await db
       .select()
       .from(messages)
       .where(
         and(
           eq(messages.role, role),
-          // This is a simplified versioning logic
           ilike(messages.content, `%${parentMessageId}%`),
         ),
       );
@@ -154,7 +149,7 @@ export const conversationQueries = {
    */
   async createMessage(
     conversationId: string,
-    role: string,
+    role: "user" | "assistant" | "system",
     content: string,
     tokensUsed?: number,
     metadata?: unknown,

@@ -10,8 +10,8 @@ export interface CreateBotConfigInput {
   target_name?: string;
   webhook_url?: string;
   credentials?: Record<string, unknown>;
-  filter_keywords?: string;
-  filter_locations?: string;
+  filter_keywords?: string[];
+  filter_locations?: string[];
   filter_min_salary?: string;
   filter_job_types?: string[];
 }
@@ -21,18 +21,13 @@ export const botQueries = {
    * Create or update bot configuration for a platform
    */
   async upsertConfig(input: CreateBotConfigInput) {
+    const now = new Date();
     const [result] = await db
       .insert(bot_configs)
-      .values({
-        ...input,
-        updated_at: new Date(),
-      })
+      .values({ ...input, updated_at: now })
       .onConflictDoUpdate({
         target: [bot_configs.user_id, bot_configs.platform],
-        set: {
-          ...input,
-          updated_at: new Date(),
-        },
+        set: { ...input, updated_at: now },
       })
       .returning();
 

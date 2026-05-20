@@ -132,7 +132,7 @@ export const applicationQueries = {
     const [result] = await db
       .update(applications)
       .set({
-        notes,
+        seeker_notes: notes,
         updated_at: new Date(),
       })
       .where(and(eq(applications.id, id), eq(applications.seeker_id, actorId)))

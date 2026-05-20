@@ -1,12 +1,6 @@
 import { generateText, generateVoyageEmbedding } from "@postly/ai-utils";
-import { resumeQueries, jobQueries } from "@postly/database";
-import type {
-  Job,
-  JobMatch,
-  Resume,
-  EducationEntry,
-} from "@postly/shared-types";
-import { pool } from "@postly/database";
+import { resumeQueries, jobQueries, pool } from "@postly/database";
+import type { Job, JobMatch, Resume, EducationEntry } from "@postly/shared-types";
 import { logger } from "@postly/logger";
 
 interface MatchedJob extends Job {
@@ -15,92 +9,53 @@ interface MatchedJob extends Job {
 }
 
 export class MatchingService {
-  /**
-   * Find jobs matching a resume using vector similarity
-   */
-  async findMatchingJobs(
-    resumeId: string,
-    userId: string,
-    limit = 20,
-  ): Promise<MatchedJob[]> {
-    // Get resume with embedding
-    const resume = await resumeQueries.findByIdWithUser(resumeId, userId);
-    if (!resume) {
-      throw new Error("Resume not found");
-    }
+  private getEmbeddingVector(embedding: number[] | string): number[] {
+    return typeof embedding === "string" ? JSON.parse(embedding) : embedding;
+  }
 
-    // If resume doesn't have embedding, generate one
+  async findMatchingJobs(resumeId: string, userId: string, limit = 20): Promise<MatchedJob[]> {
+    const resume = await resumeQueries.findByIdWithUser(resumeId, userId);
+    if (!resume) throw new Error("Resume not found");
+
     let embedding: number[];
     if (resume.embedding) {
-      // Parse embedding if stored as JSON string
-      embedding =
-        typeof resume.embedding === "string"
-          ? JSON.parse(resume.embedding)
-          : resume.embedding;
+      embedding = this.getEmbeddingVector(resume.embedding);
     } else if (resume.parsed_text) {
-      // Generate embedding from parsed text
-      const embeddingText = `Skills: ${resume.skills?.join(", ") || "Not specified"}. Experience: ${resume.experience_years || 0} years. ${resume.parsed_text.substring(0, 1000)}`;
-      const result = await generateVoyageEmbedding(embeddingText);
-      embedding = result.embedding;
+      const text = `Skills: ${resume.skills?.join(", ") || "Not specified"}. Experience: ${resume.experience_years || 0} years. ${resume.parsed_text.substring(0, 1000)}`;
+      embedding = (await generateVoyageEmbedding(text)).embedding;
     } else {
       throw new Error("Resume has no content to match against");
     }
 
-    // Find matching jobs using vector similarity
-    const matchedJobs = await jobQueries.findMatchingByEmbedding(
-      embedding,
-      limit,
-    );
-
-    // Convert similarity to percentage score
+    const matchedJobs = await jobQueries.findMatchingByEmbedding(embedding, limit);
     return matchedJobs.map((job: Job & { similarity: number }) => ({
-      ...job,
-      match_score: Math.round(job.similarity * 100),
+      ...job, match_score: Math.round(job.similarity * 100),
     }));
   }
 
-  /**
-   * Get matches with AI explanations for top jobs
-   */
-  async getMatchesWithExplanations(
-    resumeId: string,
-    userId: string,
-    limit = 10,
-  ): Promise<MatchedJob[]> {
-    const matches = await this.findMatchingJobs(resumeId, userId, limit);
-
-    // Get resume for context
-    const resume = await resumeQueries.findByIdWithUser(resumeId, userId);
+  async getMatchesWithExplanations(resumeId: string, userId: string, limit = 10): Promise<MatchedJob[]> {
+    const [matches, resume] = await Promise.all([
+      this.findMatchingJobs(resumeId, userId, limit),
+      resumeQueries.findByIdWithUser(resumeId, userId),
+    ]);
     if (!resume) return matches;
 
-    // Generate explanations for top 5 matches
-    const topMatches = matches.slice(0, 5);
-    const matchesWithExplanations = await Promise.all(
-      topMatches.map(async (job) => {
+    const top = matches.slice(0, 5);
+    const explained = await Promise.all(
+      top.map(async (job) => {
         try {
           const explanation = await this.generateMatchExplanation(resume, job);
           return { ...job, ai_explanation: explanation };
         } catch (error) {
-          logger.error("Failed to generate match explanation", {
-            jobId: job.id,
-            error: error instanceof Error ? error.message : "Unknown",
-          });
+          logger.error("Failed to generate match explanation", { jobId: job.id, error: String(error) });
           return job;
         }
       }),
     );
-
-    // Combine with remaining matches
-    return [...matchesWithExplanations, ...matches.slice(5)];
+    return [...explained, ...matches.slice(5)];
   }
 
-  /**
-   * Generate AI explanation for why a job matches a resume
-   */
-  private async generateMatchExplanation(
-    resume: Resume,
-    job: Job,
-  ): Promise<string> {
+  private async generateMatchExplanation(resume: Resume, job: Job): Promise<string> {
     const prompt = `You are a career advisor. Briefly explain (2-3 sentences) why this job might be a good match for the candidate.
 
 Candidate Profile:
@@ -120,16 +75,7 @@ Keep your response concise and actionable.`;
     return explanation.trim();
   }
 
-  /**
-   * Save a job match for a user
-   */
-  async saveMatch(
-    userId: string,
-    resumeId: string,
-    jobId: string,
-    matchScore: number,
-    explanation?: string,
-  ): Promise<JobMatch> {
+  async saveMatch(userId: string, resumeId: string, jobId: string, matchScore: number, explanation?: string): Promise<JobMatch> {
     const result = await pool.query<JobMatch>(
       `INSERT INTO job_matches (user_id, resume_id, job_id, match_score, ai_explanation, is_saved)
        VALUES ($1, $2, $3, $4, $5, true)
@@ -140,15 +86,10 @@ Keep your response concise and actionable.`;
     return result.rows[0];
   }
 
-  /**
-   * Get saved job matches for a user
-   */
   async getSavedMatches(userId: string): Promise<(JobMatch & { job: Job })[]> {
     const result = await pool.query<JobMatch & { job: Job }>(
-      `SELECT jm.*,
-              row_to_json(j.*) as job
-       FROM job_matches jm
-       JOIN jobs j ON j.id = jm.job_id
+      `SELECT jm.*, row_to_json(j.*) as job
+       FROM job_matches jm JOIN jobs j ON j.id = jm.job_id
        WHERE jm.user_id = $1 AND jm.is_saved = true
        ORDER BY jm.match_score DESC`,
       [userId],
@@ -156,26 +97,20 @@ Keep your response concise and actionable.`;
     return result.rows;
   }
 
-  /**
-   * Unsave a job match
-   */
   async unsaveMatch(userId: string, jobId: string): Promise<boolean> {
     const result = await pool.query(
       `UPDATE job_matches SET is_saved = false WHERE user_id = $1 AND job_id = $2`,
       [userId, jobId],
     );
-    return result.rowCount !== null && result.rowCount > 0;
+    return !!result.rowCount;
   }
 
-  /**
-   * Mark a job as applied
-   */
   async markAsApplied(userId: string, jobId: string): Promise<boolean> {
     const result = await pool.query(
       `UPDATE job_matches SET applied = true WHERE user_id = $1 AND job_id = $2`,
       [userId, jobId],
     );
-    return result.rowCount !== null && result.rowCount > 0;
+    return !!result.rowCount;
   }
 }
 
