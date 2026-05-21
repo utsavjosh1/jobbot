@@ -24,11 +24,17 @@ export const paymentQueries = {
       .insert(payments)
       .values({
         user_id: userId,
-        subscription_id: resolvedSubId,
-        ...input,
+        subscription_id: resolvedSubId ?? null,
+        dodo_payment_id: input.dodo_payment_id ?? null,
+        dodo_customer_id: input.dodo_customer_id ?? null,
+        event_type: input.event_type,
+        amount: input.amount,
         currency: input.currency ?? "USD",
+        status: input.status,
+        paid_at: input.paid_at ?? null,
+        raw_payload: input.raw_payload as Record<string, unknown> | null,
         idempotency_key: input.idempotency_key,
-      })
+      } as typeof payments.$inferInsert)
       .returning();
 
     return result;

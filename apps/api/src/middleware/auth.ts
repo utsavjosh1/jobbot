@@ -19,17 +19,25 @@ declare global {
   }
 }
 
-export function authenticateToken(req: Request, res: Response, next: NextFunction): void {
+export function authenticateToken(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
   const authHeader = req.headers["authorization"];
   const token = authHeader?.split(" ")[1];
   if (!token) {
-    res.status(401).json({ success: false, error: { message: "Access token required" } });
+    res
+      .status(401)
+      .json({ success: false, error: { message: "Access token required" } });
     return;
   }
   try {
     req.user = jwt.verify(token, JWT_SECRET) as JwtPayload;
     next();
   } catch {
-    res.status(401).json({ success: false, error: { message: "Invalid or expired token" } });
+    res
+      .status(401)
+      .json({ success: false, error: { message: "Invalid or expired token" } });
   }
 }

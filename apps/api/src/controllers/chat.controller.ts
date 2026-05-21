@@ -271,7 +271,7 @@ export class ChatController {
   ): Promise<void> => {
     try {
       const { id: parentMessageId } = req.params;
-      const role = (req.query.role as string) || "user";
+      const role = ((req.query.role as string) || "user") as "user" | "assistant" | "system";
 
       const versions = await conversationQueries.getMessageVersions(
         parentMessageId,

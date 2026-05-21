@@ -1,7 +1,18 @@
 import { streamText, generateText } from "@postly/ai-utils";
-import { conversationQueries, resumeQueries, jobQueries, userQueries } from "@postly/database";
+import {
+  conversationQueries,
+  resumeQueries,
+  jobQueries,
+  userQueries,
+} from "@postly/database";
 import { matchingService } from "./matching.service.js";
-import type { StreamChatResponse, MessageMetadata, Message, Job, OptimizedJobMatch } from "@postly/shared-types";
+import type {
+  StreamChatResponse,
+  MessageMetadata,
+  Message,
+  Job,
+  OptimizedJobMatch,
+} from "@postly/shared-types";
 import { logger } from "@postly/logger";
 
 interface MatchedJob extends Job {
@@ -17,12 +28,52 @@ interface JobIntent {
 }
 
 const JOB_KEYWORDS = [
-  "job","career","hiring","opportunity","opening","position","vacancy","work","hire",
-  "recruiting","talent","apply","application","resume","cv","salary","role",
-  "looking for","hunting","find","search","offer","interview","employer","company",
-  "staff","manager","engineer","designer","architect","developer","sales","marketing",
-  "doctor","nurse","teacher","driver","chef","accounting","legal","retail",
-  "remote","hybrid","fullstack","frontend","backend",
+  "job",
+  "career",
+  "hiring",
+  "opportunity",
+  "opening",
+  "position",
+  "vacancy",
+  "work",
+  "hire",
+  "recruiting",
+  "talent",
+  "apply",
+  "application",
+  "resume",
+  "cv",
+  "salary",
+  "role",
+  "looking for",
+  "hunting",
+  "find",
+  "search",
+  "offer",
+  "interview",
+  "employer",
+  "company",
+  "staff",
+  "manager",
+  "engineer",
+  "designer",
+  "architect",
+  "developer",
+  "sales",
+  "marketing",
+  "doctor",
+  "nurse",
+  "teacher",
+  "driver",
+  "chef",
+  "accounting",
+  "legal",
+  "retail",
+  "remote",
+  "hybrid",
+  "fullstack",
+  "frontend",
+  "backend",
 ];
 
 const MAX_CONTEXT_TOKENS = 8000;
@@ -63,7 +114,10 @@ function trimHistory(messages: Message[], maxTokens: number): string {
 function sanitizeUserInput(message: string): string {
   for (const pattern of BLOCKED_PATTERNS) {
     if (pattern.test(message)) {
-      logger.warn("Prompt injection attempt detected", { pattern: pattern.source, messageLength: message.length });
+      logger.warn("Prompt injection attempt detected", {
+        pattern: pattern.source,
+        messageLength: message.length,
+      });
       return "[Message filtered for policy compliance. Please rephrase your question about jobs or career advice.]";
     }
   }
@@ -73,15 +127,31 @@ function sanitizeUserInput(message: string): string {
 function toOptimizedJobMatch(job: MatchedJob): OptimizedJobMatch {
   const formatSalary = (min?: number, max?: number): string | undefined => {
     if (!min && !max) return undefined;
-    if (min && max) return `$${(min / 1000).toFixed(0)}k - $${(max / 1000).toFixed(0)}k`;
+    if (min && max)
+      return `$${(min / 1000).toFixed(0)}k - $${(max / 1000).toFixed(0)}k`;
     if (min) return `$${(min / 1000).toFixed(0)}k+`;
     return `Up to $${(max! / 1000).toFixed(0)}k`;
   };
   return {
     id: job.id,
-    display_info: { title: job.title, company: job.company_name, location: job.location || "Remote", logo_url: undefined, source: job.source },
-    matching_data: { match_score: job.match_score, ai_explanation: job.ai_explanation, key_skills: job.skills_required || [] },
-    meta: { posted_at: job.posted_at?.toISOString(), apply_url: job.source_url, remote: job.remote, salary_range: formatSalary(job.salary_min, job.salary_max) },
+    display_info: {
+      title: job.title,
+      company: job.company_name,
+      location: job.location || "Remote",
+      logo_url: undefined,
+      source: job.source,
+    },
+    matching_data: {
+      match_score: job.match_score,
+      ai_explanation: job.ai_explanation,
+      key_skills: job.skills_required || [],
+    },
+    meta: {
+      posted_at: job.posted_at?.toISOString(),
+      apply_url: job.source_url,
+      remote: job.remote,
+      salary_range: formatSalary(job.salary_min, job.salary_max),
+    },
   };
 }
 
@@ -89,19 +159,25 @@ function isNonEmployer(role: string): boolean {
   return role !== "employer" && role !== "admin";
 }
 
-function buildSystemPrompt(userRole: string, resumeContext: string, jobContext: string): string {
+function buildSystemPrompt(
+  userRole: string,
+  resumeContext: string,
+  jobContext: string,
+): string {
   const isSeeker = isNonEmployer(userRole);
-  const roleInstruction = userRole === "employer"
-    ? "You are an AI assistant helping an employer looking to hire candidates. Focus STRICTLY on hiring, evaluating candidates, and posting jobs."
-    : "You are an AI career assistant helping with resume analysis and job search.";
+  const roleInstruction =
+    userRole === "employer"
+      ? "You are an AI assistant helping an employer looking to hire candidates. Focus STRICTLY on hiring, evaluating candidates, and posting jobs."
+      : "You are an AI career assistant helping with resume analysis and job search.";
 
   const seekerCaps = isSeeker
     ? "\nYour capabilities:\n- Analyze resumes and provide constructive feedback\n- Suggest relevant job opportunities from our database\n- Offer career advice and interview tips\n- Help with job applications\n"
     : "";
 
-  const instruction1 = userRole === "employer"
-    ? "Focus STRICTLY on helping the employer with hiring. UNDER NO CIRCUMSTANCES should you suggest job listings or career advice to an employer."
-    : "When the user explicitly asks for jobs or career opportunities, reference the jobs listed below. If they say 'hi' or make small talk, respond conversationally without bringing up jobs.";
+  const instruction1 =
+    userRole === "employer"
+      ? "Focus STRICTLY on helping the employer with hiring. UNDER NO CIRCUMSTANCES should you suggest job listings or career advice to an employer."
+      : "When the user explicitly asks for jobs or career opportunities, reference the jobs listed below. If they say 'hi' or make small talk, respond conversationally without bringing up jobs.";
 
   const seekerExtra = isSeeker
     ? "\n3. DO NOT hallucinate job listings. Only mention jobs explicitly listed in the context below.\n4. If the user asks for jobs and none are listed, inform the user that no jobs are currently available."
@@ -117,10 +193,17 @@ Be professional, encouraging, and concise.${resumeContext}${isSeeker ? jobContex
 
 export class ChatService {
   async *streamChatResponse(
-    conversationId: string, userId: string, userMessage: string, resumeId?: string,
+    conversationId: string,
+    userId: string,
+    userMessage: string,
+    resumeId?: string,
   ): AsyncGenerator<StreamChatResponse> {
     try {
-      await conversationQueries.createMessage(conversationId, "user", userMessage);
+      await conversationQueries.createMessage(
+        conversationId,
+        "user",
+        userMessage,
+      );
 
       const [conversation, user] = await Promise.all([
         conversationQueries.findById(conversationId, userId),
@@ -142,8 +225,15 @@ export class ChatService {
         if (resume?.parsed_text) {
           resumeContext = `\n\nUser's Resume Summary:\n- Skills: ${resume.skills?.join(", ") || "Not specified"}\n- Experience: ${resume.experience_years || 0} years\n- Summary: ${resume.parsed_text.substring(0, 1000)}`;
           if (seekerContext && intent.isRelated) {
-            try { jobMatches = await matchingService.findMatchingJobs(effectiveResumeId, userId, 5); }
-            catch { /* silently fail */ }
+            try {
+              jobMatches = await matchingService.findMatchingJobs(
+                effectiveResumeId,
+                userId,
+                5,
+              );
+            } catch {
+              /* silently fail */
+            }
           }
         }
         if (!conversation.resume_id && resumeId) {
@@ -154,14 +244,21 @@ export class ChatService {
       if (jobMatches.length === 0 && seekerContext && intent.isRelated) {
         try {
           const recentJobs = await jobQueries.findActive(undefined, 5, 0);
-          jobMatches = recentJobs.map((job: Job) => ({ ...job, match_score: 0 }));
-        } catch { /* silently fail */ }
+          jobMatches = recentJobs.map((job: Job) => ({
+            ...job,
+            match_score: 0,
+          }));
+        } catch {
+          /* silently fail */
+        }
       }
 
       if (intent.isSpecific && jobMatches.length > 0) {
         jobMatches = jobMatches.filter((job) => {
-          const searchSpace = `${job.title || ""} ${job.description || ""} ${job.skills_required?.join(" ") || ""}`.toLowerCase();
-          if (intent.techKeywords.length > 0) return intent.techKeywords.some((kw) => searchSpace.includes(kw));
+          const searchSpace =
+            `${job.title || ""} ${job.description || ""} ${job.skills_required?.join(" ") || ""}`.toLowerCase();
+          if (intent.techKeywords.length > 0)
+            return intent.techKeywords.some((kw) => searchSpace.includes(kw));
           return intent.allKeywords.some((kw) => searchSpace.includes(kw));
         });
       }
@@ -170,13 +267,23 @@ export class ChatService {
       if (jobMatches.length > 0) {
         const hasResume = !!effectiveResumeId;
         jobContext = `\n\n${hasResume ? "Matching" : "Available"} job opportunities from our database:\n${jobMatches
-          .map((j, i) => `${i + 1}. ${j.title} at ${j.company_name}${hasResume && j.match_score > 0 ? ` (${j.match_score}% match)` : ""} - ${j.location || "Remote"}`)
+          .map(
+            (j, i) =>
+              `${i + 1}. ${j.title} at ${j.company_name}${hasResume && j.match_score > 0 ? ` (${j.match_score}% match)` : ""} - ${j.location || "Remote"}`,
+          )
           .join("\n")}`;
       }
 
-      const systemPrompt = buildSystemPrompt(userRole, resumeContext, jobContext);
+      const systemPrompt = buildSystemPrompt(
+        userRole,
+        resumeContext,
+        jobContext,
+      );
       const sanitizedMessage = sanitizeUserInput(userMessage);
-      const conversationHistory = trimHistory(messages.filter((m: Message) => m.role !== "system"), MAX_CONTEXT_TOKENS);
+      const conversationHistory = trimHistory(
+        messages.filter((m: Message) => m.role !== "system"),
+        MAX_CONTEXT_TOKENS,
+      );
       const fullPrompt = `${systemPrompt}\n\nConversation:\n${conversationHistory}\nuser: ${sanitizedMessage}\nassistant:`;
 
       let fullResponse = "";
@@ -200,23 +307,37 @@ export class ChatService {
       }
 
       const savedMsg = await conversationQueries.createMessage(
-        conversationId, "assistant", fullResponse, metadata.usage?.total_tokens, metadata,
+        conversationId,
+        "assistant",
+        fullResponse,
+        metadata.usage?.total_tokens,
+        metadata,
       );
 
       if (messages.length === 0) {
         const titlePrompt = `Generate a short 3-5 word title for this conversation. User's first message: "${userMessage}". Return ONLY the title, no quotes or explanation.`;
         const { text: title } = await generateText(titlePrompt);
-        await conversationQueries.updateTitle(conversationId, title.trim().substring(0, 50));
+        await conversationQueries.updateTitle(
+          conversationId,
+          title.trim().substring(0, 50),
+        );
       }
 
       if (jobMatches.length > 0) {
-        yield { type: "metadata", metadata: { job_matches: jobMatches.map(toOptimizedJobMatch) } };
+        yield {
+          type: "metadata",
+          metadata: { job_matches: jobMatches.map(toOptimizedJobMatch) },
+        };
       }
 
       yield { type: "complete", message_id: savedMsg.id, metadata };
     } catch (error) {
       console.error("Chat service error:", error);
-      yield { type: "error", error: error instanceof Error ? error.message : "An unknown error occurred" };
+      yield {
+        type: "error",
+        error:
+          error instanceof Error ? error.message : "An unknown error occurred",
+      };
     }
   }
 }

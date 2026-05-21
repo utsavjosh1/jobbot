@@ -10,53 +10,138 @@ function userFromRequest(req: Request): string {
 }
 
 export class BotController {
-  handleDiscordCallback = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  handleDiscordCallback = async (
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> => {
     try {
       const { guild_id } = req.query;
-      if (!guild_id) { res.redirect(`${WEB_URL}/dashboard?discord_error=missing_guild`); return; }
-      await botQueries.upsertConfig({ user_id: userFromRequest(req), platform: "discord", target_id: guild_id as string });
-      res.redirect(`${WEB_URL}/dashboard?discord_success=true&guild_id=${guild_id}`);
+      if (!guild_id) {
+        res.redirect(`${WEB_URL}/dashboard?discord_error=missing_guild`);
+        return;
+      }
+      await botQueries.upsertConfig({
+        user_id: userFromRequest(req),
+        platform: "discord",
+        target_id: guild_id as string,
+      });
+      res.redirect(
+        `${WEB_URL}/dashboard?discord_success=true&guild_id=${guild_id}`,
+      );
     } catch (error) {
       console.error("Discord callback error:", error);
       res.redirect(`${WEB_URL}/dashboard?discord_error=true`);
     }
   };
 
-  getConfigs = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  getConfigs = async (
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> => {
     try {
-      const configs = await db.select().from(bot_configs).where(eq(bot_configs.user_id, userFromRequest(req)));
+      const configs = await db
+        .select()
+        .from(bot_configs)
+        .where(eq(bot_configs.user_id, userFromRequest(req)));
       res.json({ success: true, data: configs });
-    } catch (error) { _next(error); }
+    } catch (error) {
+      _next(error);
+    }
   };
 
-  upsertConfig = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  upsertConfig = async (
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> => {
     try {
-      const { platform, target_id, target_name, webhook_url, credentials, filters } = req.body;
+      const {
+        platform,
+        target_id,
+        target_name,
+        webhook_url,
+        credentials,
+        filters,
+      } = req.body;
       const result = await botQueries.upsertConfig({
-        user_id: userFromRequest(req), platform: platform as BotPlatform,
-        target_id, target_name, webhook_url, credentials, ...filters,
+        user_id: userFromRequest(req),
+        platform: platform as BotPlatform,
+        target_id,
+        target_name,
+        webhook_url,
+        credentials,
+        ...filters,
       });
       res.json({ success: true, data: result });
-    } catch (error) { _next(error); }
+    } catch (error) {
+      _next(error);
+    }
   };
 
-  updateConfig = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  updateConfig = async (
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> => {
     try {
       const userId = userFromRequest(req);
-      const [existing] = await db.select().from(bot_configs).where(and(eq(bot_configs.id, req.params.id), eq(bot_configs.user_id, userId))).limit(1);
-      if (!existing) { res.status(404).json({ success: false, message: "Config not found" }); return; }
-      const [updated] = await db.update(bot_configs).set({ ...req.body, updated_at: new Date() }).where(eq(bot_configs.id, req.params.id)).returning();
+      const [existing] = await db
+        .select()
+        .from(bot_configs)
+        .where(
+          and(
+            eq(bot_configs.id, req.params.id as string),
+            eq(bot_configs.user_id, userId),
+          ),
+        )
+        .limit(1);
+      if (!existing) {
+        res.status(404).json({ success: false, message: "Config not found" });
+        return;
+      }
+      const [updated] = await db
+        .update(bot_configs)
+        .set({ ...req.body, updated_at: new Date() })
+        .where(eq(bot_configs.id, req.params.id as string))
+        .returning();
       res.json({ success: true, data: updated });
-    } catch (error) { _next(error); }
+    } catch (error) {
+      _next(error);
+    }
   };
 
-  triggerTestNotification = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
+  triggerTestNotification = async (
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+  ): Promise<void> => {
     try {
       const userId = userFromRequest(req);
-      const [config] = await db.select().from(bot_configs).where(and(eq(bot_configs.id, req.params.id), eq(bot_configs.user_id, userId))).limit(1);
-      if (!config) { res.status(404).json({ success: false, message: "Bot configuration not found." }); return; }
+      const [config] = await db
+        .select()
+        .from(bot_configs)
+        .where(
+          and(
+            eq(bot_configs.id, req.params.id as string),
+            eq(bot_configs.user_id, userId),
+          ),
+        )
+        .limit(1);
+      if (!config) {
+        res
+          .status(404)
+          .json({ success: false, message: "Bot configuration not found." });
+        return;
+      }
       await queueService.dispatchForPlatform(config.id);
-      res.json({ success: true, message: `Test notification queued for ${config.platform}!` });
-    } catch (error) { _next(error); }
+      res.json({
+        success: true,
+        message: `Test notification queued for ${config.platform}!`,
+      });
+    } catch (error) {
+      _next(error);
+    }
   };
 }
