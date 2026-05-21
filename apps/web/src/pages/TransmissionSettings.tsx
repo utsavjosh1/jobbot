@@ -237,7 +237,8 @@ export function TransmissionSettings() {
     } catch (error: unknown) {
       addToast({
         type: "error",
-        message: error instanceof Error ? error.message : "Failed to upload image.",
+        message:
+          error instanceof Error ? error.message : "Failed to upload image.",
       });
     } finally {
       setIsUploading(false);
@@ -858,7 +859,10 @@ function Field({
   );
 }
 
-function Input({ accent, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { accent: string }) {
+function Input({
+  accent,
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement> & { accent: string }) {
   return (
     <input
       {...props}
@@ -879,7 +883,10 @@ function Input({ accent, ...props }: React.InputHTMLAttributes<HTMLInputElement>
   );
 }
 
-function TextArea({ accent, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { accent: string }) {
+function TextArea({
+  accent,
+  ...props
+}: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { accent: string }) {
   return (
     <textarea
       {...props}
@@ -902,7 +909,11 @@ function TextArea({ accent, ...props }: React.TextareaHTMLAttributes<HTMLTextAre
   );
 }
 
-function Select({ accent, children, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> & { accent: string }) {
+function Select({
+  accent,
+  children,
+  ...props
+}: React.SelectHTMLAttributes<HTMLSelectElement> & { accent: string }) {
   return (
     <select
       {...props}

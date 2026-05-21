@@ -59,7 +59,15 @@ export const tokenBucketRateLimiter = (config: RateLimitConfig) => {
 
       const key = `${keyPrefix}:${identifier}`;
       const [grantedResult, currentTokensResult] = await (
-        redis as unknown as { consumeTokenBucket: (key: string, maxTokens: number, refillRateSec: number, now: number, cost: number) => [number, string] }
+        redis as unknown as {
+          consumeTokenBucket: (
+            key: string,
+            maxTokens: number,
+            refillRateSec: number,
+            now: number,
+            cost: number,
+          ) => [number, string];
+        }
       ).consumeTokenBucket(key, maxTokens, refillRateSec, Date.now(), 1);
 
       const granted = grantedResult === 1;
