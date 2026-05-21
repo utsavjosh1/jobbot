@@ -101,6 +101,12 @@ export default [
     },
   },
   {
+    files: ["src/pages/TransmissionSettings.tsx"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
+  {
     ignores: ["dist/**", "node_modules/**"],
   },
 ];

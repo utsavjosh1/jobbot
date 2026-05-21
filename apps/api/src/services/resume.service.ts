@@ -12,7 +12,6 @@ export class ResumeService {
    * Removes control characters (including newlines) and normalizes to a single line.
    */
   private sanitizeForLog(input: string): string {
-    // eslint-disable-next-line no-control-regex
     return String(input).replace(/[\x00-\x1F\x7F]/g, " ");
   }
 

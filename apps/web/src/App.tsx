@@ -10,6 +10,11 @@ const TransmissionHome = lazy(() =>
     default: m.TransmissionHome,
   })),
 );
+const DocsView = lazy(() =>
+  import("./pages/DocsView").then((m) => ({
+    default: m.DocsView,
+  })),
+);
 const TransmissionRoleSelector = lazy(() =>
   import("@pages/TransmissionRoleSelector").then((m) => ({
     default: m.TransmissionRoleSelector,
@@ -83,6 +88,7 @@ function App() {
           <Route path="pricing" element={<TransmissionPricing />} />
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
           <Route path="login/callback" element={<AuthCallbackPage />} />
+          <Route path="docs" element={<DocsView />} />
 
           {/* ─── Protected ───────────────────────────────── */}
           <Route

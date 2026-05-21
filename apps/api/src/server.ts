@@ -191,23 +191,25 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-// Start server
-app.listen(API_PORT, "0.0.0.0", async () => {
-  logger.info("API server started", {
-    port: API_PORT,
-    environment: NODE_ENV,
-    url: `http://0.0.0.0:${API_PORT}`,
-  });
-
-  // Initialize Bot Job Queue
-  try {
-    await queueService.initDailyCron();
-  } catch (err) {
-    logger.error("Failed to initialize Bot Queue", {
-      error: err instanceof Error ? err.message : "Unknown",
+// Start server only if not in test mode
+if (process.env.NODE_ENV !== "test") {
+  app.listen(API_PORT, "0.0.0.0", async () => {
+    logger.info("API server started", {
+      port: API_PORT,
+      environment: NODE_ENV,
+      url: `http://0.0.0.0:${API_PORT}`,
     });
-  }
-});
+
+    // Initialize Bot Job Queue
+    try {
+      await queueService.initDailyCron();
+    } catch (err) {
+      logger.error("Failed to initialize Bot Queue", {
+        error: err instanceof Error ? err.message : "Unknown",
+      });
+    }
+  });
+}
 
 // Graceful shutdown — close all connections before exiting
 const shutdown = async (signal: string) => {

@@ -1,6 +1,6 @@
 import { eq, desc, and, ilike } from "drizzle-orm";
-import { db } from "../index";
-import { applications, jobs, application_status_history } from "../schema";
+import { db } from "../index.js";
+import { applications, jobs, application_status_history } from "../schema.js";
 import type { ApplicationStatus } from "@postly/shared-types";
 
 export const applicationQueries = {

@@ -33,11 +33,25 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          "vendor-react": ["react", "react-dom", "react-router-dom"],
-          "vendor-query": ["@tanstack/react-query"],
-          "vendor-icons": ["lucide-react"],
-          "vendor-utils": ["axios"],
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (
+              id.includes("react/") ||
+              id.includes("react-dom/") ||
+              id.includes("react-router-dom/")
+            ) {
+              return "vendor-react";
+            }
+            if (id.includes("@tanstack/react-query")) {
+              return "vendor-query";
+            }
+            if (id.includes("lucide-react")) {
+              return "vendor-icons";
+            }
+            if (id.includes("axios")) {
+              return "vendor-utils";
+            }
+          }
         },
       },
     },

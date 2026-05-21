@@ -73,7 +73,7 @@ export class AuthController {
       if (!validation.success) {
         res.status(400).json({
           success: false,
-          error: { message: validation.error.errors[0].message },
+          error: { message: validation.error.issues[0].message },
         });
         return;
       }
@@ -103,7 +103,7 @@ export class AuthController {
       if (!validation.success) {
         res.status(400).json({
           success: false,
-          error: { message: validation.error.errors[0].message },
+          error: { message: validation.error.issues[0].message },
         });
         return;
       }
@@ -129,7 +129,7 @@ export class AuthController {
       if (!validation.success) {
         res.status(400).json({
           success: false,
-          error: { message: validation.error.errors[0].message },
+          error: { message: validation.error.issues[0].message },
         });
         return;
       }
@@ -173,7 +173,7 @@ export class AuthController {
       if (!validation.success) {
         res.status(400).json({
           success: false,
-          error: { message: validation.error.errors[0].message },
+          error: { message: validation.error.issues[0].message },
         });
         return;
       }
@@ -200,7 +200,7 @@ export class AuthController {
       if (!validation.success) {
         res.status(400).json({
           success: false,
-          error: { message: validation.error.errors[0].message },
+          error: { message: validation.error.issues[0].message },
         });
         return;
       }
@@ -228,7 +228,7 @@ export class AuthController {
       if (!validation.success) {
         res.status(400).json({
           success: false,
-          error: { message: validation.error.errors[0].message },
+          error: { message: validation.error.issues[0].message },
         });
         return;
       }
@@ -256,7 +256,7 @@ export class AuthController {
       if (!validation.success) {
         res.status(400).json({
           success: false,
-          error: { message: validation.error.errors[0].message },
+          error: { message: validation.error.issues[0].message },
         });
         return;
       }

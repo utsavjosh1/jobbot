@@ -1,6 +1,6 @@
 import { eq, desc } from "drizzle-orm";
-import { db } from "../index";
-import { payments, subscriptions } from "../schema";
+import { db } from "../index.js";
+import { payments, subscriptions } from "../schema.js";
 import type { CreatePaymentInput } from "@postly/shared-types";
 
 export const paymentQueries = {

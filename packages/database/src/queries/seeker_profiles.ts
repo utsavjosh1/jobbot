@@ -1,7 +1,7 @@
 import { eq, sql, and, isNull } from "drizzle-orm";
 import { getTableColumns } from "drizzle-orm";
-import { db } from "../index";
-import { seeker_profiles } from "../schema";
+import { db } from "../index.js";
+import { seeker_profiles } from "../schema.js";
 import type { SeekerProfileData } from "@postly/shared-types";
 
 export const seekerProfileQueries = {

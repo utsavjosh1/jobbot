@@ -8,20 +8,21 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo run clean && rm -rf node_modules",
+    "update-deps": "npx npm-check-updates -u --workspaces --root && npm install --legacy-peer-deps",
     "prepare": "husky"
   },
   "devDependencies": {
     "husky": "^9.1.7",
-    "prettier": "^3.8.1",
-    "turbo": "^2.8.1",
-    "typescript": "^5.7.2"
+    "prettier": "^3.8.3",
+    "turbo": "^2.9.6",
+    "typescript": "^6.0.3"
   },
   "workspaces": [
     "apps/*",
     "packages/*",
     "packages/config/*"
   ],
-  "packageManager": "npm@10.9.0",
+  "packageManager": "npm@11.13.0",
   "engines": {
     "node": ">=20.0.0"
   }

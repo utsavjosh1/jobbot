@@ -20,7 +20,7 @@ import {
   SeekerProfileData,
   SubscriptionStatus,
   DodoSubscriptionPayload,
-} from "./domain";
+} from "./domain.js";
 
 export type {
   Notification,
@@ -176,27 +176,6 @@ export interface CreateJobInput {
   skills_required?: string[];
   experience_required?: string;
   expires_at?: Date;
-  external_job_id?: string;
-  fingerprint?: string;
-}
-
-/** Input from web scrapers — used by the scraper service to upsert jobs */
-export interface ScrapedJobInput {
-  title: string;
-  company_name: string;
-  description: string;
-  location?: string;
-  salary_min?: number;
-  salary_max?: number;
-  job_type?: string;
-  remote?: boolean;
-  source: JobSource;
-  source_url: string;
-  skills_required?: string[];
-  experience_required?: string;
-  posted_at?: Date;
-  expires_at?: Date;
-  embedding?: number[];
   external_job_id?: string;
   fingerprint?: string;
 }

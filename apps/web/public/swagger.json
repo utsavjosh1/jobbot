@@ -1,0 +1,277 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Postly Unified API",
+    "version": "1.0.0",
+    "description": "Comprehensive documentation for Postly REST API."
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" },
+                  "full_name": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Success" } }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "responses": { "200": { "description": "Current user" } }
+      }
+    },
+    "/users/profile": {
+      "get": {
+        "tags": ["Users"],
+        "responses": { "200": { "description": "User profile" } }
+      },
+      "patch": {
+        "tags": ["Users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "full_name": { "type": "string" },
+                  "avatar_url": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Updated" } }
+      }
+    },
+    "/users/seeker-profile": {
+      "get": {
+        "tags": ["Users"],
+        "responses": { "200": { "description": "Seeker profile" } }
+      },
+      "patch": {
+        "tags": ["Users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "headline": { "type": "string" },
+                  "summary": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Updated" } }
+      }
+    },
+    "/users/employer-profile": {
+      "get": {
+        "tags": ["Users"],
+        "responses": { "200": { "description": "Employer profile" } }
+      },
+      "patch": {
+        "tags": ["Users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "company_name": { "type": "string" },
+                  "company_website": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Updated" } }
+      }
+    },
+    "/jobs": {
+      "get": {
+        "tags": ["Jobs"],
+        "security": [],
+        "responses": { "200": { "description": "List jobs" } }
+      }
+    },
+    "/jobs/matches": {
+      "get": {
+        "tags": ["Jobs"],
+        "responses": { "200": { "description": "Matched jobs" } }
+      }
+    },
+    "/jobs/{id}": {
+      "get": {
+        "tags": ["Jobs"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Job details" } }
+      }
+    },
+    "/resumes/upload": {
+      "post": {
+        "tags": ["Resumes"],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "resume": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Uploaded" } }
+      }
+    },
+    "/resumes": {
+      "get": {
+        "tags": ["Resumes"],
+        "responses": { "200": { "description": "List resumes" } }
+      }
+    },
+    "/chat/conversations": {
+      "get": {
+        "tags": ["Chat"],
+        "responses": { "200": { "description": "List conversations" } }
+      },
+      "post": {
+        "tags": ["Chat"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "initial_message": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/chat/stream": {
+      "post": {
+        "tags": ["Chat"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": { "type": "string" },
+                  "conversation_id": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "SSE Stream" } }
+      }
+    },
+    "/applications": {
+      "get": {
+        "tags": ["Applications"],
+        "responses": { "200": { "description": "List applications" } }
+      },
+      "post": {
+        "tags": ["Applications"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "job_id": { "type": "string" },
+                  "resume_id": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Applied" } }
+      }
+    },
+    "/discord/commands": {
+      "get": {
+        "tags": ["Discord Bot"],
+        "summary": "Bot Commands Reference (Informational)",
+        "description": "These are the commands you can use in the Postly Discord Bot. Note: These are not HTTP endpoints, but commands typed in Discord.",
+        "responses": {
+          "200": {
+            "description": "List of available Discord commands",
+            "content": {
+              "application/json": {
+                "example": {
+                  "!post job": "Posts a new job finding query",
+                  "!status": "Check the status of your scraping job",
+                  "!help": "Lists all available commands"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

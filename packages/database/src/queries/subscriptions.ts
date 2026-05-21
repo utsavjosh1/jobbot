@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { db } from "../index";
-import { subscriptions } from "../schema";
+import { db } from "../index.js";
+import { subscriptions } from "../schema.js";
 import type {
   SubscriptionPlan,
   SubscriptionStatus,

@@ -2,7 +2,7 @@
   "name": "@postly/logger",
   "version": "1.0.0",
   "private": true,
-  "type": "commonjs",
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
@@ -12,10 +12,10 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "winston": "^3.17.0"
+    "winston": "^3.19.0"
   },
   "devDependencies": {
     "@postly/typescript-config": "*",
-    "typescript": "^5.7.2"
+    "typescript": "^6.0.3"
   }
 }

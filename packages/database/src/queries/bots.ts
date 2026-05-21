@@ -1,6 +1,6 @@
 import { eq, and, desc } from "drizzle-orm";
-import { db } from "../index";
-import { bot_configs, bot_posts } from "../schema";
+import { db } from "../index.js";
+import { bot_configs, bot_posts } from "../schema.js";
 import type { BotPlatform } from "@postly/shared-types";
 
 export interface CreateBotConfigInput {

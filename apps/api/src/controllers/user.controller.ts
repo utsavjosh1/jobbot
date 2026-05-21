@@ -49,7 +49,7 @@ const updateEmployerProfileSchema = z.object({
   company_size: z.string().optional(),
   industry: z.string().max(150).optional(),
   headquarters_location: z.string().max(255).optional(),
-  social_links: z.record(z.string()).optional(),
+  social_links: z.record(z.string(), z.string()).optional(),
 });
 
 export class UserController {
@@ -102,7 +102,7 @@ export class UserController {
       if (!validation.success) {
         res.status(400).json({
           success: false,
-          error: { message: validation.error.errors[0].message },
+          error: { message: validation.error.issues[0].message },
         });
         return;
       }
@@ -149,7 +149,7 @@ export class UserController {
       if (!validation.success) {
         res.status(400).json({
           success: false,
-          error: { message: validation.error.errors[0].message },
+          error: { message: validation.error.issues[0].message },
         });
         return;
       }
@@ -188,7 +188,7 @@ export class UserController {
       if (!validation.success) {
         res.status(400).json({
           success: false,
-          error: { message: validation.error.errors[0].message },
+          error: { message: validation.error.issues[0].message },
         });
         return;
       }
@@ -233,7 +233,7 @@ export class UserController {
       if (!validation.success) {
         res.status(400).json({
           success: false,
-          error: { message: validation.error.errors[0].message },
+          error: { message: validation.error.issues[0].message },
         });
         return;
       }

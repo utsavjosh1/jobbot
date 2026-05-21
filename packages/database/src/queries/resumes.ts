@@ -1,6 +1,6 @@
 import { eq, desc, and } from "drizzle-orm";
-import { db } from "../index";
-import { resumes } from "../schema";
+import { db } from "../index.js";
+import { resumes } from "../schema.js";
 import type { Resume } from "@postly/shared-types";
 
 export const resumeQueries = {

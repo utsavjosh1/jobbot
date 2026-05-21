@@ -2,7 +2,7 @@
   "name": "@postly/ai-utils",
   "version": "1.0.0",
   "private": true,
-  "type": "commonjs",
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -19,15 +19,16 @@
     "clean": "rm -rf dist && rm -rf .turbo"
   },
   "dependencies": {
-    "@langchain/core": "^1.1.19",
-    "@langchain/openai": "^1.2.5",
+    "@langchain/core": "1.1.42",
+    "@langchain/openai": "^1.4.5",
     "@postly/config": "*",
     "@postly/shared-types": "*",
-    "langchain": "^1.2.18",
-    "langsmith": "^0.4.12"
+    "langchain": "^0.3.37",
+    "langsmith": "^0.5.26",
+    "resend": "6.1.3"
   },
   "devDependencies": {
     "@postly/typescript-config": "*",
-    "typescript": "^5.7.2"
+    "typescript": "^6.0.3"
   }
 }

@@ -2,7 +2,7 @@
 # ──────────────────────────────────────────────────────────────
 # Postly — Daily PostgreSQL Backup
 # ──────────────────────────────────────────────────────────────
-# Cron entry:  0 2 * * * /opt/postly/scripts/backup.sh >> /var/log/postly-backup.log 2>&1
+# Cron entry:  0 2 * * * /var/www/postly/scripts/backup.sh >> /var/log/postly-backup.log 2>&1
 #
 # Prerequisites:
 #   - rclone configured with a remote named "b2" (Backblaze B2)
@@ -11,7 +11,7 @@
 set -euo pipefail
 
 DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_DIR="/opt/postly/backups/local"
+BACKUP_DIR="/var/www/postly/backups/local"
 BACKUP_FILE="/tmp/postly_${DATE}.dump"
 RETENTION_DAYS=7
 

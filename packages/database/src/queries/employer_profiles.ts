@@ -1,6 +1,6 @@
 import { eq, sql, and, isNull } from "drizzle-orm";
-import { db } from "../index";
-import { employer_profiles } from "../schema";
+import { db } from "../index.js";
+import { employer_profiles } from "../schema.js";
 import type {
   CreateEmployerProfileInput,
   UpdateEmployerProfileInput,
