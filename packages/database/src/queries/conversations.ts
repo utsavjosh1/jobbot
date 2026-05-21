@@ -1,6 +1,6 @@
 import { eq, asc, and, desc, ilike } from "drizzle-orm";
-import { db } from "../index";
-import { conversations, messages } from "../schema";
+import { db } from "../index.js";
+import { conversations, messages } from "../schema.js";
 import type { Conversation, Message } from "@postly/shared-types";
 
 export const conversationQueries = {

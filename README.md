@@ -7,24 +7,22 @@ Complete runbook for deploying Postly to a VPS.
 ## Architecture Overview
 
 ```
-VPS Proxy (Nginx/Traefik) → API (Express)
-                          → Static Web (Vite build)
+VPS Proxy (Nginx/Traefik) → API (Express) → Static Web (Vite build)
 
 Internal Docker Network:
   API ←→ PostgreSQL (pgvector)
   API ←→ Redis (BullMQ + Caching)
-  Scraper ←→ PostgreSQL
   Bot ←→ PostgreSQL + Redis
 ```
 
-**Stack:** Node.js API · Python Scraper · Python Discord Bot · PostgreSQL 16 + pgvector · Redis 7
+**Stack:** Node.js API · Python Discord Bot · PostgreSQL 16 + pgvector · Redis 7
 
 ---
 
 ## Quick-Start Checklist
 
 ```
-□  1. Clone repo to /opt/postly, create .env
+□  1. Clone repo to /var/www/postly, create .env
 □  2. docker compose -f docker-compose.prod.yml up -d
 □  3. Verify all services healthy
 □  4. Configure GitHub Actions secrets
@@ -42,7 +40,7 @@ Internal Docker Network:
 Log into your VPS and run:
 
 ```bash
-cd /opt/postly
+cd /var/www/postly
 git clone https://github.com/<your-repo>.git .
 
 # Create production .env from template
@@ -60,11 +58,11 @@ nano .env
 - `DISCORD_BOT_TOKEN` — From Discord Developer Portal
 - `WEB_URL` — Your production domain (e.g., `https://postly.io`)
 
-### 2. Login to GHCR
+### 2. Login to Docker Hub
 
 ```bash
-# Login to pull pre-built images from GitHub Container Registry
-echo "<YOUR_PAT>" | docker login ghcr.io -u <github-username> --password-stdin
+# Login to pull pre-built images from Docker Hub
+echo "<YOUR_PAT>" | docker login -u <dockerhub-username> --password-stdin
 ```
 
 ### 3. Start the Stack
@@ -90,10 +88,10 @@ Expected health response:
 }
 ```
 
-### 4. Run HNSW Index Migration (One-time)
+### 4. Run Database Migrations
 
 ```bash
-docker exec -i postly-postgres psql -U postly -d postly < scripts/add-hnsw-indexes.sql
+docker exec postly-api npm run migrate:up
 ```
 
 ### 5. Setup Backups
@@ -106,7 +104,7 @@ chmod +x scripts/backup.sh
 bash scripts/backup.sh
 
 # Add to cron (runs daily at 2 AM)
-(crontab -l 2>/dev/null; echo "0 2 * * * /opt/postly/scripts/backup.sh >> /var/log/postly-backup.log 2>&1") | crontab -
+(crontab -l 2>/dev/null; echo "0 2 * * * /var/www/postly/scripts/backup.sh >> /var/log/postly-backup.log 2>&1") | crontab -
 ```
 
 ### 6. Configure GitHub Actions
@@ -129,11 +127,11 @@ Push to `main` and verify the pipeline deploys successfully.
 Every deploy tags images with the Git SHA. To rollback:
 
 ```bash
-cd /opt/postly
-export API_IMAGE=ghcr.io/<repo>/api:<previous-sha>
-export SCRAPER_IMAGE=ghcr.io/<repo>/scraper:<previous-sha>
-export BOT_IMAGE=ghcr.io/<repo>/bot:<previous-sha>
-docker compose -f docker-compose.prod.yml up -d --no-deps api bot scraper
+cd /var/www/postly
+export API_IMAGE=<dockerhub-username>/postly-api:<previous-sha>
+
+export BOT_IMAGE=<dockerhub-username>/postly-bot:<previous-sha>
+docker compose -f docker-compose.prod.yml up -d --no-deps api bot
 ```
 
 ---
@@ -164,19 +162,18 @@ docker rm -f pg-restore-test
 | ------- | ----------------------------------------------- | ----------- |
 | 0–1K    | Current setup, no changes                       | —           |
 | 1K–10K  | Add Postgres read replica (second VPS)          | +€4.5/mo    |
-| 10K–50K | Extract scraper to own VPS, add pgBouncer       | +€4.5/mo    |
+| 10K–50K | Add pgBouncer                                   | +€4.5/mo    |
 | 50K+    | Consider managed DB, split into domain services | Variable    |
 
 ---
 
 ## File Reference
 
-| File                           | Purpose                          |
-| ------------------------------ | -------------------------------- |
-| `docker-compose.prod.yml`      | Main production stack            |
-| `scripts/backup.sh`            | Daily PostgreSQL backup          |
-| `scripts/add-hnsw-indexes.sql` | pgvector HNSW indexes (run once) |
-| `.env.production.example`      | Production env template          |
-| `.github/workflows/deploy.yml` | CI/CD pipeline                   |
-| `.github/workflows/ci.yml`     | PR checks                        |
-| `.github/SECRETS.md`           | GitHub secrets reference         |
+| File                           | Purpose                  |
+| ------------------------------ | ------------------------ |
+| `docker-compose.prod.yml`      | Main production stack    |
+| `scripts/backup.sh`            | Daily PostgreSQL backup  |
+| `.env.production.example`      | Production env template  |
+| `.github/workflows/deploy.yml` | CI/CD pipeline           |
+| `.github/workflows/ci.yml`     | PR checks                |
+| `.github/SECRETS.md`           | GitHub secrets reference |

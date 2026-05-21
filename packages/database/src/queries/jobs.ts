@@ -1,11 +1,10 @@
 import { eq, desc, and, sql, isNull, ilike, isNotNull } from "drizzle-orm";
 import { getTableColumns } from "drizzle-orm";
-import { db } from "../index";
-import { jobs } from "../schema";
+import { db } from "../index.js";
+import { jobs } from "../schema.js";
 import type {
   Job,
   CreateJobInput,
-  ScrapedJobInput,
   JobSearchFilters,
 } from "@postly/shared-types";
 
@@ -36,80 +35,6 @@ export const jobQueries = {
       .returning();
 
     return result as unknown as Job;
-  },
-
-  /**
-   * Find a job by its source URL (for dedup during scraping)
-   */
-  async findBySourceUrl(sourceUrl: string): Promise<Job | null> {
-    const [result] = await db
-      .select()
-      .from(jobs)
-      .where(eq(jobs.source_url, sourceUrl));
-
-    return (result as unknown as Job) || null;
-  },
-
-  /**
-   * Upsert a scraped job — update if exists (by source_url), insert otherwise
-   */
-  async upsertFromScraper(input: ScrapedJobInput): Promise<Job> {
-    const expiresAt =
-      input.expires_at || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
-
-    const existing = await this.findBySourceUrl(input.source_url);
-
-    if (existing) {
-      const [updated] = await db
-        .update(jobs)
-        .set({
-          title: input.title,
-          description: input.description,
-          location: input.location,
-          salary_min: input.salary_min?.toString(),
-          salary_max: input.salary_max?.toString(),
-          job_type: input.job_type,
-          remote: input.remote || false,
-          skills_required: input.skills_required || [],
-          experience_required: input.experience_required,
-          embedding: input.embedding,
-          updated_at: new Date(),
-          expires_at: expiresAt,
-          is_active: true,
-          external_job_id: input.external_job_id,
-          fingerprint: input.fingerprint,
-        })
-        .where(eq(jobs.source_url, input.source_url))
-        .returning();
-
-      return updated as unknown as Job;
-    }
-
-    const [inserted] = await db
-      .insert(jobs)
-      .values({
-        title: input.title,
-        company_name: input.company_name,
-        description: input.description,
-        location: input.location,
-        salary_min: input.salary_min?.toString(),
-        salary_max: input.salary_max?.toString(),
-        job_type: input.job_type,
-        remote: input.remote || false,
-        source: input.source,
-        source_url: input.source_url,
-        skills_required: input.skills_required || [],
-        experience_required: input.experience_required,
-        posted_at: input.posted_at,
-        embedding: input.embedding,
-        expires_at: expiresAt,
-        is_active: true,
-        external_job_id: input.external_job_id,
-        fingerprint: input.fingerprint,
-      })
-      .returning();
-
-    return inserted as unknown as Job;
   },
 
   /**

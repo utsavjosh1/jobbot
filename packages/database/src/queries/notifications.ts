@@ -1,6 +1,6 @@
 import { eq, desc } from "drizzle-orm";
-import { db } from "../index";
-import { notifications } from "../schema";
+import { db } from "../index.js";
+import { notifications } from "../schema.js";
 import type { NotificationStatus } from "@postly/shared-types";
 
 export interface CreateNotificationInput {

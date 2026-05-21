@@ -74,7 +74,7 @@ export function TransmissionPricing() {
     try {
       const { checkout_url } =
         await paymentService.createCheckoutSession(productId);
-      window.location.href = checkout_url;
+      window.location.assign(checkout_url);
     } catch (error) {
       console.error("Failed to initiate checkout:", error);
     } finally {
@@ -331,7 +331,7 @@ export function TransmissionPricing() {
               try {
                 const { portal_url } =
                   await paymentService.getCustomerPortal(customerId);
-                window.location.href = portal_url;
+                window.location.assign(portal_url);
               } catch (error) {
                 console.error("Portal error:", error);
               }

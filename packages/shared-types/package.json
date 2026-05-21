@@ -2,19 +2,18 @@
   "name": "@postly/shared-types",
   "version": "1.0.0",
   "private": true,
-  "type": "commonjs",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
-  "types": "./dist/esm/index.d.ts",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/esm/index.d.ts",
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && tsc -p tsconfig.esm.json",
+    "build": "tsc",
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
     "lint": "eslint src"
@@ -22,10 +21,10 @@
   "devDependencies": {
     "@postly/eslint-config": "*",
     "@postly/typescript-config": "*",
-    "eslint": "^8.57.1",
-    "typescript": "^5.7.2"
+    "eslint": "^10.2.1",
+    "typescript": "^6.0.3"
   },
   "dependencies": {
-    "zod": "^4.3.6"
+    "zod": "^4.4.1"
   }
 }

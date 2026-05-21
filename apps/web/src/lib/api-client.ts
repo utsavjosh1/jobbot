@@ -27,7 +27,7 @@ apiClient.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("access_token");
-      window.location.href = "/login";
+      window.location.assign("/login");
       console.warn("401 Unauthorized - Token removed");
     }
     return Promise.reject(error);

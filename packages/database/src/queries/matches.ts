@@ -1,6 +1,6 @@
 import { eq, and, desc, isNull } from "drizzle-orm";
-import { db } from "../index";
-import { job_matches, jobs } from "../schema";
+import { db } from "../index.js";
+import { job_matches, jobs } from "../schema.js";
 import type { JobMatch, Job } from "@postly/shared-types";
 
 export const matchQueries = {

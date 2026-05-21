@@ -309,7 +309,7 @@ export function TransmissionIntegrations() {
                   {/* Add bot button */}
                   <button
                     onClick={() => {
-                      window.location.href = discordService.getAuthorizeUrl();
+                      window.location.assign(discordService.getAuthorizeUrl());
                     }}
                     style={{
                       padding: "10px 20px",

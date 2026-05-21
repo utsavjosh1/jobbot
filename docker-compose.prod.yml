@@ -127,47 +127,6 @@ services:
       - "3000:3000"
     # NOTE: No ports exposed — traffic flows through Nginx only
 
-  # ─── Scraper (Python + Playwright) ────────────────────────
-  scraper:
-    image: ${SCRAPER_IMAGE:-utsavjoshi/postly-scraper:latest}
-    build:
-      context: .
-      dockerfile: apps/scraper/Dockerfile
-    container_name: postly-scraper
-    restart: unless-stopped
-    environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: ${DB_NAME:-postly}
-      DB_USER: ${DB_USER:-postly}
-      DB_PASSWORD: ${DB_PASSWORD:?Database password required}
-      DATABASE_URL: postgresql://${DB_USER:-postly}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-postly}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      VOYAGE_API_KEY: ${VOYAGE_API_KEY:-}
-      HEALTH_PORT: 8080
-    depends_on:
-      postgres:
-        condition: service_healthy
-    shm_size: '512mb'
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 400M
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health')"]
-      interval: 60s
-      timeout: 10s
-      retries: 2
-      start_period: 60s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    networks:
-      - postly-network
-
   # ─── Discord Bot ───────────────────────────────────────────
   bot:
     image: ${BOT_IMAGE:-utsavjoshi/postly-bot:latest}
