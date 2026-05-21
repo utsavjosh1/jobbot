@@ -45,35 +45,47 @@ app.use(metricsMiddleware);
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 
 const allowedOrigins = WEB_URL
-  ? WEB_URL.split(",").map((o) => o.trim().replace(/\/$/, "")).filter(Boolean)
+  ? WEB_URL.split(",")
+      .map((o) => o.trim().replace(/\/$/, ""))
+      .filter(Boolean)
   : [];
 
 if (!allowedOrigins.length) {
   logger.warn("WEB_URL is not set — CORS will block all browser requests");
 }
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    const normalizedOrigin = origin.replace(/\/$/, "");
-    if (allowedOrigins.includes(normalizedOrigin)) return callback(null, true);
-    logger.warn("CORS blocked request", { origin });
-    callback(new Error(`CORS: origin '${origin}' not allowed`));
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  maxAge: 86400,
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const normalizedOrigin = origin.replace(/\/$/, "");
+      if (allowedOrigins.includes(normalizedOrigin))
+        return callback(null, true);
+      logger.warn("CORS blocked request", { origin });
+      callback(new Error(`CORS: origin '${origin}' not allowed`));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    maxAge: 86400,
+  }),
+);
 
-const aiRateLimiter = tokenBucketRateLimiter({ maxTokens: 50, refillRateSec: 5, keyPrefix: "rl:ai" });
+const aiRateLimiter = tokenBucketRateLimiter({
+  maxTokens: 50,
+  refillRateSec: 5,
+  keyPrefix: "rl:ai",
+});
 
 const apiRateLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { success: false, error: { message: "Too many requests, please try again later." } },
+  message: {
+    success: false,
+    error: { message: "Too many requests, please try again later." },
+  },
 });
 
 const healthRateLimiter = rateLimit({
@@ -81,15 +93,33 @@ const healthRateLimiter = rateLimit({
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { success: false, error: { message: "Health check rate limit exceeded." } },
+  message: {
+    success: false,
+    error: { message: "Health check rate limit exceeded." },
+  },
 });
 
 app.get("/health", healthRateLimiter, async (_req, res) => {
   const checks: Record<string, string> = {};
-  try { await pool.query("SELECT 1"); checks.db = "ok"; } catch { checks.db = "failed"; }
-  try { await healthRedis.ping(); checks.redis = "ok"; } catch { checks.redis = "failed"; }
+  try {
+    await pool.query("SELECT 1");
+    checks.db = "ok";
+  } catch {
+    checks.db = "failed";
+  }
+  try {
+    await healthRedis.ping();
+    checks.redis = "ok";
+  } catch {
+    checks.redis = "failed";
+  }
   const allHealthy = checks.db === "ok" && checks.redis === "ok";
-  res.status(allHealthy ? 200 : 503).json({ status: allHealthy ? "ok" : "degraded", checks, uptime: process.uptime(), timestamp: new Date().toISOString() });
+  res.status(allHealthy ? 200 : 503).json({
+    status: allHealthy ? "ok" : "degraded",
+    checks,
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
 });
 
 app.use(apiRateLimiter);
@@ -106,7 +136,9 @@ app.use((req, res, next) => {
         url: req.url,
         status: res.statusCode,
         duration_ms: duration,
-        user_id: (req as unknown as Request & { user?: { id: string } }).user?.id || null,
+        user_id:
+          (req as unknown as Request & { user?: { id: string } }).user?.id ||
+          null,
       });
     }
   });
@@ -126,9 +158,18 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 app.listen(API_PORT, "0.0.0.0", async () => {
-  logger.info("API server started", { port: API_PORT, environment: NODE_ENV, url: `http://0.0.0.0:${API_PORT}` });
-  try { await queueService.initDailyCron(); }
-  catch (err) { logger.error("Failed to initialize Bot Queue", { error: err instanceof Error ? err.message : "Unknown" }); }
+  logger.info("API server started", {
+    port: API_PORT,
+    environment: NODE_ENV,
+    url: `http://0.0.0.0:${API_PORT}`,
+  });
+  try {
+    await queueService.initDailyCron();
+  } catch (err) {
+    logger.error("Failed to initialize Bot Queue", {
+      error: err instanceof Error ? err.message : "Unknown",
+    });
+  }
 });
 
 const shutdown = async (signal: string) => {

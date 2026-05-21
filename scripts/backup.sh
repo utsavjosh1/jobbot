@@ -4,9 +4,9 @@
 # ──────────────────────────────────────────────────────────────
 # Cron entry:  0 2 * * * /opt/postly/scripts/backup.sh >> /var/log/postly-backup.log 2>&1
 #
-# Prerequisites:
-#   - rclone configured with a remote named "b2" (Backblaze B2)
-#   - Or comment out the rclone section to use local backups only
+# NOTE: Uses the shared PostgreSQL from the monitoring stack.
+#       The container is named 'postgres' (not 'postly-postgres').
+#       Credentials are sourced from monitoring/.env.
 # ──────────────────────────────────────────────────────────────
 set -euo pipefail
 
@@ -20,14 +20,38 @@ ALERT_WEBHOOK="${ALERT_WEBHOOK:-}"
 
 echo "[${DATE}] Starting Postly backup..."
 
+# ─── Load shared DB credentials from monitoring stack ─────────
+MONITORING_ENV="/var/www/monitoring/.env"
+if [ -f "$MONITORING_ENV" ]; then
+  set -a
+  . "$MONITORING_ENV"
+  set +a
+elif [ -f "/opt/monitoring/.env" ]; then
+  set -a
+  . "/opt/monitoring/.env"
+  set +a
+else
+  # Fall back to postly's own .env
+  if [ -f "/opt/postly/.env" ]; then
+    set -a
+    . "/opt/postly/.env"
+    set +a
+  fi
+fi
+
+# Defaults for postly database
+DB_USER="${DB_USER:-postly}"
+DB_NAME="${DB_NAME:-postly}"
+
 # Create local backup directory
 mkdir -p "${BACKUP_DIR}"
 
 # ─── Step 1: Dump PostgreSQL ──────────────────────────────────
-echo "→ Creating compressed PostgreSQL dump..."
-docker exec postly-postgres pg_dump \
-  -U "${DB_USER:-postly}" \
-  -d "${DB_NAME:-postly}" \
+# Shared PostgreSQL container is named 'postgres' from monitoring stack
+echo "→ Creating compressed PostgreSQL dump (from shared postgres container)..."
+docker exec postgres pg_dump \
+  -U "${DB_USER}" \
+  -d "${DB_NAME}" \
   -Fc --compress=9 \
   > "${BACKUP_FILE}"
 

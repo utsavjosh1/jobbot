@@ -451,7 +451,11 @@ erDiagram
 ```
 
 ## Entity Count: 22 tables
+
 ## Enum Types: 10 (user_role, application_status, subscription_status, subscription_plan, payment_status, notification_status, notification_channel, bot_platform, job_source, message_role)
+
 ## Vector Columns: 4 (seeker_profiles.embedding, employer_profiles.embedding, resumes.embedding, jobs.embedding)
+
 ## Indexes: 25+
+
 ## Soft Delete: 5 tables (users, seeker_profiles, employer_profiles, resumes, jobs, job_matches)

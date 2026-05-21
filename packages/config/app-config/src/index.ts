@@ -94,19 +94,20 @@ export const DODO_PAYMENTS_ENVIRONMENT =
 export const DODO_PAYMENTS_RETURN_URL =
   process.env.DODO_PAYMENTS_RETURN_URL || "";
 
+// ─── Cloudinary (Media Storage) ────────────────────────────────────────────
+// Postly uses Cloudinary for image/media uploads instead of local MinIO.
+// Credentials come from the shared monitoring/.env.
+
+export const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || "";
+export const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY || "";
+export const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || "";
+export const CLOUDINARY_URL = process.env.CLOUDINARY_URL || "";
+
 // ─── Email (Resend) ──────────────────────────────────────────────────────────
 
 export const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 export const RESEND_FROM_EMAIL =
   process.env.RESEND_FROM_EMAIL || "Postly <onboarding@resend.dev>";
-
-// ─── MinIO / S3 Storage (Optional) ──────────────────────────────────────────
-
-export const MINIO_ENDPOINT = process.env.MINIO_ENDPOINT || "localhost";
-export const MINIO_PORT = parseInt(process.env.MINIO_PORT || "9000", 10);
-export const MINIO_ACCESS_KEY = process.env.MINIO_ACCESS_KEY || "minioadmin";
-export const MINIO_SECRET_KEY = process.env.MINIO_SECRET_KEY || "minioadmin";
-export const MINIO_BUCKET = process.env.MINIO_BUCKET || "postly";
 
 // ─── Validation ──────────────────────────────────────────────────────────────
 

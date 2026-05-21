@@ -33,9 +33,9 @@
     "@postly/eslint-config": "*",
     "@postly/typescript-config": "*",
     "@types/pg": "^8.11.10",
-    "dotenv": "^16.4.7",
+    "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.9",
-    "eslint": "8",
-    "typescript": "^5.7.2"
+    "eslint": "^10.4.0",
+    "typescript": "^6.0.3"
   }
 }

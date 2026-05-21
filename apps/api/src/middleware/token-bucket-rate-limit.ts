@@ -32,7 +32,10 @@ const tokenBucketScript = `
   return { granted, tostring(tokens) }
 `;
 
-redis.defineCommand("consumeTokenBucket", { numberOfKeys: 1, lua: tokenBucketScript });
+redis.defineCommand("consumeTokenBucket", {
+  numberOfKeys: 1,
+  lua: tokenBucketScript,
+});
 
 export const tokenBucketRateLimiter = (config: RateLimitConfig) => {
   const { maxTokens, refillRateSec, keyPrefix = "rl:tb" } = config;
@@ -50,10 +53,14 @@ export const tokenBucketRateLimiter = (config: RateLimitConfig) => {
         if (typeof decoded?.id === "string" && decoded.id.length > 0) {
           identifier = `${clientIp}:uid:${decoded.id}`;
         }
-      } catch { /* IP-only rate limiting */ }
+      } catch {
+        /* IP-only rate limiting */
+      }
 
       const key = `${keyPrefix}:${identifier}`;
-      const [grantedResult, currentTokensResult] = await (redis as any).consumeTokenBucket(key, maxTokens, refillRateSec, Date.now(), 1);
+      const [grantedResult, currentTokensResult] = await (
+        redis as unknown as { consumeTokenBucket: (key: string, maxTokens: number, refillRateSec: number, now: number, cost: number) => [number, string] }
+      ).consumeTokenBucket(key, maxTokens, refillRateSec, Date.now(), 1);
 
       const granted = grantedResult === 1;
       const currentTokens = parseFloat(currentTokensResult);
@@ -72,7 +79,13 @@ export const tokenBucketRateLimiter = (config: RateLimitConfig) => {
 
       return res.status(429).json({
         success: false,
-        error: { code: "too_many_requests", message: "Too many requests. Please try again later.", limit: maxTokens, remaining, reset_at: Math.ceil(resetMs / 1000) },
+        error: {
+          code: "too_many_requests",
+          message: "Too many requests. Please try again later.",
+          limit: maxTokens,
+          remaining,
+          reset_at: Math.ceil(resetMs / 1000),
+        },
       });
     } catch (err) {
       console.error("Token Bucket Rate Limiter Error:", err);

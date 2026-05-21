@@ -24,10 +24,10 @@
     "@postly/config": "*",
     "@postly/shared-types": "*",
     "langchain": "^1.2.18",
-    "langsmith": "^0.4.12"
+    "langsmith": "^0.7.1"
   },
   "devDependencies": {
     "@postly/typescript-config": "*",
-    "typescript": "^5.7.2"
+    "typescript": "^6.0.3"
   }
 }

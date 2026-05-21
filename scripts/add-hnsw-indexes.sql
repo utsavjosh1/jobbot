@@ -15,7 +15,8 @@
 --   - CPU will spike during build — run during low-traffic hours
 --
 -- Usage:
---   docker exec -i postly-postgres psql -U postly -d postly < scripts/add-hnsw-indexes.sql
+--   docker exec -i postgres psql -U postly -d postly < scripts/add-hnsw-indexes.sql
+--   (shared PostgreSQL container from monitoring stack)
 --
 -- Rollback:
 --   DROP INDEX CONCURRENTLY IF EXISTS idx_jobs_embedding_hnsw;

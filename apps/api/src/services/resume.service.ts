@@ -9,12 +9,16 @@ import { logger } from "@postly/logger";
 const ResumeAnalysisSchema = z.object({
   skills: z.array(z.string()).default([]),
   experience_years: z.number().default(0),
-  education: z.array(z.object({
-    degree: z.string().default("Unknown"),
-    institution: z.string().default("Unknown"),
-    year: z.number().optional(),
-    field_of_study: z.string().optional(),
-  })).default([]),
+  education: z
+    .array(
+      z.object({
+        degree: z.string().default("Unknown"),
+        institution: z.string().default("Unknown"),
+        year: z.number().optional(),
+        field_of_study: z.string().optional(),
+      }),
+    )
+    .default([]),
   summary: z.string().default(""),
 });
 
@@ -41,7 +45,11 @@ export class ResumeService {
       const result = await parser.getText();
       return result.text.trim();
     }
-    if (mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || mimetype === "application/msword") {
+    if (
+      mimetype ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+      mimetype === "application/msword"
+    ) {
       const result = await mammoth.extractRawText({ buffer });
       return result.value.trim();
     }
@@ -68,26 +76,63 @@ Return ONLY the JSON object, no markdown formatting or explanation.`;
       const validated = ResumeAnalysisSchema.safeParse(rawParsed);
 
       if (!validated.success) {
-        logger.warn("LLM output validation failed", { errors: validated.error.issues, rawKeys: Object.keys(rawParsed) });
-        return { skills: [], experience_years: 0, education: [], summary: "Unable to fully analyze resume. Please try again." };
+        logger.warn("LLM output validation failed", {
+          errors: validated.error.issues,
+          rawKeys: Object.keys(rawParsed),
+        });
+        return {
+          skills: [],
+          experience_years: 0,
+          education: [],
+          summary: "Unable to fully analyze resume. Please try again.",
+        };
       }
       return validated.data;
     } catch (error) {
-      logger.error("Failed to parse AI response", { error: error instanceof Error ? sanitizeForLog(error.message) : "Unknown error" });
-      return { skills: [], experience_years: 0, education: [], summary: "Unable to analyze resume. Please try again." };
+      logger.error("Failed to parse AI response", {
+        error:
+          error instanceof Error
+            ? sanitizeForLog(error.message)
+            : "Unknown error",
+      });
+      return {
+        skills: [],
+        experience_years: 0,
+        education: [],
+        summary: "Unable to analyze resume. Please try again.",
+      };
     }
   }
 
-  async processResume(userId: string, fileUrl: string, fileBuffer: Buffer, mimetype: string): Promise<Resume> {
+  async processResume(
+    userId: string,
+    fileUrl: string,
+    fileBuffer: Buffer,
+    mimetype: string,
+  ): Promise<Resume> {
     const resume = await resumeQueries.create(userId, fileUrl);
     try {
       const parsedText = await this.parseFile(fileBuffer, mimetype);
       const analysis = await this.analyzeResume(parsedText);
       const embeddingText = buildEmbeddingText(analysis);
       const { embedding } = await generateVoyageEmbedding(embeddingText);
-      return (await resumeQueries.updateAnalysis(resume.id, parsedText, analysis.skills, analysis.experience_years, analysis.education, embedding)) || resume;
+      return (
+        (await resumeQueries.updateAnalysis(
+          resume.id,
+          parsedText,
+          analysis.skills,
+          analysis.experience_years,
+          analysis.education,
+          embedding,
+        )) || resume
+      );
     } catch (error) {
-      console.error("Error processing resume:", error instanceof Error ? sanitizeForLog(error.message) : "Unknown error");
+      console.error(
+        "Error processing resume:",
+        error instanceof Error
+          ? sanitizeForLog(error.message)
+          : "Unknown error",
+      );
       return resume;
     }
   }
@@ -112,7 +157,14 @@ Return ONLY the JSON object, no markdown formatting or explanation.`;
     const embeddingText = buildEmbeddingText(analysis);
     const { embedding } = await generateVoyageEmbedding(embeddingText);
 
-    return resumeQueries.updateAnalysis(id, resume.parsed_text, analysis.skills, analysis.experience_years, analysis.education, embedding);
+    return resumeQueries.updateAnalysis(
+      id,
+      resume.parsed_text,
+      analysis.skills,
+      analysis.experience_years,
+      analysis.education,
+      embedding,
+    );
   }
 }
 

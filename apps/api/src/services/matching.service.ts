@@ -1,6 +1,11 @@
 import { generateText, generateVoyageEmbedding } from "@postly/ai-utils";
 import { resumeQueries, jobQueries, pool } from "@postly/database";
-import type { Job, JobMatch, Resume, EducationEntry } from "@postly/shared-types";
+import type {
+  Job,
+  JobMatch,
+  Resume,
+  EducationEntry,
+} from "@postly/shared-types";
 import { logger } from "@postly/logger";
 
 interface MatchedJob extends Job {
@@ -13,7 +18,11 @@ export class MatchingService {
     return typeof embedding === "string" ? JSON.parse(embedding) : embedding;
   }
 
-  async findMatchingJobs(resumeId: string, userId: string, limit = 20): Promise<MatchedJob[]> {
+  async findMatchingJobs(
+    resumeId: string,
+    userId: string,
+    limit = 20,
+  ): Promise<MatchedJob[]> {
     const resume = await resumeQueries.findByIdWithUser(resumeId, userId);
     if (!resume) throw new Error("Resume not found");
 
@@ -27,13 +36,21 @@ export class MatchingService {
       throw new Error("Resume has no content to match against");
     }
 
-    const matchedJobs = await jobQueries.findMatchingByEmbedding(embedding, limit);
+    const matchedJobs = await jobQueries.findMatchingByEmbedding(
+      embedding,
+      limit,
+    );
     return matchedJobs.map((job: Job & { similarity: number }) => ({
-      ...job, match_score: Math.round(job.similarity * 100),
+      ...job,
+      match_score: Math.round(job.similarity * 100),
     }));
   }
 
-  async getMatchesWithExplanations(resumeId: string, userId: string, limit = 10): Promise<MatchedJob[]> {
+  async getMatchesWithExplanations(
+    resumeId: string,
+    userId: string,
+    limit = 10,
+  ): Promise<MatchedJob[]> {
     const [matches, resume] = await Promise.all([
       this.findMatchingJobs(resumeId, userId, limit),
       resumeQueries.findByIdWithUser(resumeId, userId),
@@ -47,7 +64,10 @@ export class MatchingService {
           const explanation = await this.generateMatchExplanation(resume, job);
           return { ...job, ai_explanation: explanation };
         } catch (error) {
-          logger.error("Failed to generate match explanation", { jobId: job.id, error: String(error) });
+          logger.error("Failed to generate match explanation", {
+            jobId: job.id,
+            error: String(error),
+          });
           return job;
         }
       }),
@@ -55,7 +75,10 @@ export class MatchingService {
     return [...explained, ...matches.slice(5)];
   }
 
-  private async generateMatchExplanation(resume: Resume, job: Job): Promise<string> {
+  private async generateMatchExplanation(
+    resume: Resume,
+    job: Job,
+  ): Promise<string> {
     const prompt = `You are a career advisor. Briefly explain (2-3 sentences) why this job might be a good match for the candidate.
 
 Candidate Profile:
@@ -75,7 +98,13 @@ Keep your response concise and actionable.`;
     return explanation.trim();
   }
 
-  async saveMatch(userId: string, resumeId: string, jobId: string, matchScore: number, explanation?: string): Promise<JobMatch> {
+  async saveMatch(
+    userId: string,
+    resumeId: string,
+    jobId: string,
+    matchScore: number,
+    explanation?: string,
+  ): Promise<JobMatch> {
     const result = await pool.query<JobMatch>(
       `INSERT INTO job_matches (user_id, resume_id, job_id, match_score, ai_explanation, is_saved)
        VALUES ($1, $2, $3, $4, $5, true)

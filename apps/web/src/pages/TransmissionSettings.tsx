@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuthStore } from "../stores/auth.store";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -51,6 +51,7 @@ export function TransmissionSettings() {
     role === "seeker" ? "var(--tx-seeker)" : "var(--tx-recruiter)";
 
   // Form state
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [formData, setFormData] = useState<Record<string, any>>({
     full_name: user?.full_name || "",
     avatar_url: user?.avatar_url || "",
@@ -107,7 +108,7 @@ export function TransmissionSettings() {
   });
 
   const updateRoleProfile = useMutation({
-    mutationFn: (data: any) =>
+    mutationFn: (data: Record<string, unknown>) =>
       role === "seeker"
         ? userService.updateSeekerProfile(data)
         : userService.updateEmployerProfile(data),
@@ -233,10 +234,10 @@ export function TransmissionSettings() {
         type: "success",
         message: "Cipher image uploaded to broadcast node.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       addToast({
         type: "error",
-        message: error.message || "Failed to upload image.",
+        message: error instanceof Error ? error.message : "Failed to upload image.",
       });
     } finally {
       setIsUploading(false);
@@ -857,7 +858,7 @@ function Field({
   );
 }
 
-function Input({ accent, ...props }: any) {
+function Input({ accent, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { accent: string }) {
   return (
     <input
       {...props}
@@ -878,7 +879,7 @@ function Input({ accent, ...props }: any) {
   );
 }
 
-function TextArea({ accent, ...props }: any) {
+function TextArea({ accent, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement> & { accent: string }) {
   return (
     <textarea
       {...props}
@@ -901,7 +902,7 @@ function TextArea({ accent, ...props }: any) {
   );
 }
 
-function Select({ accent, children, ...props }: any) {
+function Select({ accent, children, ...props }: React.SelectHTMLAttributes<HTMLSelectElement> & { accent: string }) {
   return (
     <select
       {...props}

@@ -105,7 +105,11 @@ export const conversationQueries = {
       .where(eq(conversations.id, id));
   },
 
-  async editMessage(messageId: string, content: string, conversationId: string) {
+  async editMessage(
+    messageId: string,
+    content: string,
+    conversationId: string,
+  ) {
     const [result] = await db
       .insert(messages)
       .values({
@@ -128,7 +132,10 @@ export const conversationQueries = {
       .where(eq(messages.id, messageId));
   },
 
-  async getMessageVersions(parentMessageId: string, role: "user" | "assistant" | "system") {
+  async getMessageVersions(
+    parentMessageId: string,
+    role: "user" | "assistant" | "system",
+  ) {
     const result = await db
       .select()
       .from(messages)

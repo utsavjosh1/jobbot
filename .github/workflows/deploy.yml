@@ -22,21 +22,62 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
 
           script: |
-            set -e  # Exit immediately on any error
+            set -e
 
-            # Navigate to project directory
             cd /var/www/postly
 
-            # Ensure clean state and pull latest changes (handles divergent branches)
+            # Pull latest code
             git fetch --all
             git reset --hard origin/main
 
-            # Rebuild and start all services
+            # ── Load all required env vars ──────────────────────────
+            # 1. Shared monitoring credentials (DB + Redis passwords)
+            if [ -f /var/www/monitoring/.env ]; then
+              echo "📦 Sourcing monitoring/.env for shared credentials..."
+              set -a
+              . /var/www/monitoring/.env
+              set +a
+            elif [ -f /opt/monitoring/.env ]; then
+              echo "📦 Sourcing /opt/monitoring/.env for shared credentials..."
+              set -a
+              . /opt/monitoring/.env
+              set +a
+            else
+              echo "❌ monitoring/.env not found — POSTLY_DB_PASSWORD and REDIS_PASSWORD required"
+              exit 1
+            fi
+
+            # 2. Postly-specific secrets (JWT, API keys, etc.)
+            #    These can either be in postly's own .env or passed as GH Secrets
+            if [ -f .env ]; then
+              echo "📦 Sourcing postly/.env for app secrets..."
+              set -a
+              . ./.env
+              set +a
+            fi
+
+            # 3. Override with GitHub Secrets where provided (highest priority)
+            [ -n "${{ secrets.JWT_SECRET }}" ]          && export JWT_SECRET="${{ secrets.JWT_SECRET }}"
+            [ -n "${{ secrets.JWT_REFRESH_SECRET }}" ]  && export JWT_REFRESH_SECRET="${{ secrets.JWT_REFRESH_SECRET }}"
+            [ -n "${{ secrets.DISCORD_BOT_TOKEN }}" ]   && export DISCORD_BOT_TOKEN="${{ secrets.DISCORD_BOT_TOKEN }}"
+            [ -n "${{ secrets.OPENAI_API_KEY }}" ]      && export OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}"
+            [ -n "${{ secrets.VOYAGE_API_KEY }}" ]      && export VOYAGE_API_KEY="${{ secrets.VOYAGE_API_KEY }}"
+
+            # Validate required vars
+            : "${POSTLY_DB_PASSWORD:?POSTLY_DB_PASSWORD not set}"
+            : "${REDIS_PASSWORD:?REDIS_PASSWORD not set}"
+            : "${JWT_SECRET:?JWT_SECRET not set}"
+            : "${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET not set}"
+
+            # ── Build and deploy ─────────────────────────────────────
+            echo "🔨 Building images..."
             docker compose -f docker-compose.prod.yml build --no-cache
+
+            echo "🚀 Starting services..."
             docker compose -f docker-compose.prod.yml up -d
 
             # Wait for API to become healthy
-            echo "Waiting for API health check..."
+            echo "⏳ Waiting for API health check..."
             RETRIES=10
             DELAY=5
             for i in $(seq 1 $RETRIES); do
@@ -57,10 +98,10 @@ jobs:
             # Run database migrations (if any)
             docker exec postly-api npm run migrate:up || echo "No migrations to run"
 
-            # Rebuild other services if needed
+            # Rebuild other services
             docker compose -f docker-compose.prod.yml up -d --build scraper bot
 
-            # Cleanup old images
+            # Cleanup
             docker image prune -f
 
             echo "🚀 Deployment complete"

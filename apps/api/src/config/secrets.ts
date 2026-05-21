@@ -36,4 +36,10 @@ export {
   DODO_PAYMENTS_RETURN_URL,
   RESEND_API_KEY,
   RESEND_FROM_EMAIL,
+
+  // Cloudinary (Media Storage)
+  CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET,
+  CLOUDINARY_URL,
 } from "@postly/config";

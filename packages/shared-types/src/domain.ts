@@ -145,7 +145,7 @@ export interface CreatePaymentInput {
   currency?: string;
   paid_at?: Date;
   raw_payload?: unknown;
-  idempotency_key?: string;
+  idempotency_key: string;
 }
 
 export interface Payment extends CreatePaymentInput {

@@ -1,77 +1,5 @@
 services:
 
-  # ─── PostgreSQL with pgvector ──────────────────────────────
-  postgres:
-    image: pgvector/pgvector:pg16
-    container_name: postly-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${DB_USER:-postly}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?Database password required}
-      POSTGRES_DB: ${DB_NAME:-postly}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./packages/database/migrations:/docker-entrypoint-initdb.d:ro
-    command: >
-      postgres
-      -c shared_buffers=256MB
-      -c effective_cache_size=512MB
-      -c work_mem=16MB
-      -c maintenance_work_mem=64MB
-      -c max_connections=50
-      -c random_page_cost=1.1
-      -c wal_compression=on
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 768M
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postly}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    networks:
-      - postly-network
-
-  # ─── Redis (Job Queue & Caching) ──────────────────────────
-  redis:
-    image: redis:7-alpine
-    container_name: postly-redis
-    restart: unless-stopped
-    command: >
-      redis-server
-      --maxmemory 256mb
-      --maxmemory-policy noeviction
-      --appendonly yes
-      --save 60 1
-      --loglevel warning
-    volumes:
-      - redis_data:/data
-    deploy:
-      resources:
-        limits:
-          cpus: '0.15'
-          memory: 320M
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "5m"
-        max-file: "2"
-    networks:
-      - postly-network
-    # NOTE: No ports exposed — only accessible via internal Docker network
-
   # ─── API Server ────────────────────────────────────────────
   api:
     image: ${API_IMAGE:-utsavjoshi/postly-api:latest}
@@ -83,28 +11,29 @@ services:
     environment:
       NODE_ENV: production
       NODE_OPTIONS: "--max-old-space-size=384"
+      # ── Shared PostgreSQL (from monitoring stack) ──
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: ${DB_NAME:-postly}
-      DB_USER: ${DB_USER:-postly}
-      DB_PASSWORD: ${DB_PASSWORD:?Database password required}
-      DATABASE_URL: postgresql://${DB_USER:-postly}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-postly}
+      DB_NAME: postly
+      DB_USER: postly
+      DB_PASSWORD: ${POSTLY_DB_PASSWORD:?POSTLY_DB_PASSWORD required}
+      DATABASE_URL: postgresql://postly:${POSTLY_DB_PASSWORD}@postgres:5432/postly
+      # ── Shared Redis (from monitoring stack) ──
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_URL: redis://redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD required}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/1
+      # ── Auth ──
       JWT_SECRET: ${JWT_SECRET:?JWT secret required}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT refresh secret required}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-30d}
       WEB_URL: ${WEB_URL:-http://localhost}
+      # ── AI ──
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       VOYAGE_API_KEY: ${VOYAGE_API_KEY:-}
+      # ── Server ──
       API_PORT: 3000
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -122,10 +51,9 @@ services:
         max-size: "10m"
         max-file: "3"
     networks:
-      - postly-network
+      - monitoring_nw
     ports:
       - "3000:3000"
-    # NOTE: No ports exposed — traffic flows through Nginx only
 
   # ─── Scraper (Python + Playwright) ────────────────────────
   scraper:
@@ -136,18 +64,18 @@ services:
     container_name: postly-scraper
     restart: unless-stopped
     environment:
+      # ── Shared PostgreSQL (from monitoring stack) ──
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: ${DB_NAME:-postly}
-      DB_USER: ${DB_USER:-postly}
-      DB_PASSWORD: ${DB_PASSWORD:?Database password required}
-      DATABASE_URL: postgresql://${DB_USER:-postly}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-postly}
+      DB_NAME: postly
+      DB_USER: postly
+      DB_PASSWORD: ${POSTLY_DB_PASSWORD:?POSTLY_DB_PASSWORD required}
+      DATABASE_URL: postgresql://postly:${POSTLY_DB_PASSWORD}@postgres:5432/postly
+      # ── AI ──
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       VOYAGE_API_KEY: ${VOYAGE_API_KEY:-}
+      # ── Health ──
       HEALTH_PORT: 8080
-    depends_on:
-      postgres:
-        condition: service_healthy
     shm_size: '512mb'
     deploy:
       resources:
@@ -166,7 +94,7 @@ services:
         max-size: "10m"
         max-file: "3"
     networks:
-      - postly-network
+      - monitoring_nw
 
   # ─── Discord Bot ───────────────────────────────────────────
   bot:
@@ -177,22 +105,21 @@ services:
     container_name: postly-bot
     restart: unless-stopped
     environment:
+      # ── Shared PostgreSQL (from monitoring stack) ──
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: ${DB_NAME:-postly}
-      DB_USER: ${DB_USER:-postly}
-      DB_PASSWORD: ${DB_PASSWORD:?Database password required}
-      DATABASE_URL: postgresql://${DB_USER:-postly}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-postly}
+      DB_NAME: postly
+      DB_USER: postly
+      DB_PASSWORD: ${POSTLY_DB_PASSWORD:?POSTLY_DB_PASSWORD required}
+      DATABASE_URL: postgresql://postly:${POSTLY_DB_PASSWORD}@postgres:5432/postly
+      # ── Shared Redis (from monitoring stack) ──
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_URL: redis://redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD required}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/1
+      # ── Discord ──
       DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:?Discord bot token required}
       WEB_URL: ${WEB_URL:-http://localhost}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -204,12 +131,11 @@ services:
         max-size: "10m"
         max-file: "3"
     networks:
-      - postly-network
+      - monitoring_nw
 
-volumes:
-  postgres_data:
-  redis_data:
+volumes: {}
 
 networks:
-  postly-network:
-    driver: bridge
+  monitoring_nw:
+    name: monitoring_nw
+    external: true
