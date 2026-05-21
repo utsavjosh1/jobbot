@@ -123,14 +123,12 @@ export class AuthService {
     if (!user.is_verified)
       throw new AuthError("Email not verified", 403, "EMAIL_NOT_VERIFIED");
 
-    userQueries
-      .updateLastLogin(user.id)
-      .catch((err) =>
-        logger.error("Failed to update last login", {
-          error: String(err),
-          userId: user.id,
-        }),
-      );
+    userQueries.updateLastLogin(user.id).catch((err) =>
+      logger.error("Failed to update last login", {
+        error: String(err),
+        userId: user.id,
+      }),
+    );
 
     const tokens = this.generateTokens(user);
     return {

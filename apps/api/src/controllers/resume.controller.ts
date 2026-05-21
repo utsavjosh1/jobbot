@@ -104,12 +104,10 @@ export class ResumeController {
         userFromRequest(req),
       );
       if (!resume) {
-        res
-          .status(404)
-          .json({
-            success: false,
-            error: { message: "Resume not found or has no parsed text" },
-          });
+        res.status(404).json({
+          success: false,
+          error: { message: "Resume not found or has no parsed text" },
+        });
         return;
       }
       res.json({ success: true, data: resume });

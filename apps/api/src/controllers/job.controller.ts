@@ -106,12 +106,10 @@ export class JobController {
     try {
       const { resume_id, match_score = 0, explanation } = req.body;
       if (!resume_id) {
-        res
-          .status(400)
-          .json({
-            success: false,
-            error: { message: "resume_id is required" },
-          });
+        res.status(400).json({
+          success: false,
+          error: { message: "resume_id is required" },
+        });
         return;
       }
       const match = await matchingService.saveMatch(
@@ -133,7 +131,10 @@ export class JobController {
     next: NextFunction,
   ): Promise<void> => {
     try {
-      await matchingService.unsaveMatch(userFromRequest(req), req.params.jobId as string);
+      await matchingService.unsaveMatch(
+        userFromRequest(req),
+        req.params.jobId as string,
+      );
       res.json({ success: true, data: { message: "Job unsaved" } });
     } catch (error) {
       next(error);

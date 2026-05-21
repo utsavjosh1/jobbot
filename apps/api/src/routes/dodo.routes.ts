@@ -20,12 +20,10 @@ function requireEnv(
 ): (req: Request, res: Response, next: NextFunction) => void {
   return (_req, res, next) => {
     if (!value) {
-      res
-        .status(503)
-        .json({
-          success: false,
-          error: { message: `Service unavailable: ${key} is not configured.` },
-        });
+      res.status(503).json({
+        success: false,
+        error: { message: `Service unavailable: ${key} is not configured.` },
+      });
       return;
     }
     next();
@@ -116,7 +114,8 @@ function getWebhookHandler() {
                   ? now
                   : undefined,
               raw_payload: data,
-              idempotency_key: (data?.payment_id as string) ?? `${payload.type}_${Date.now()}`,
+              idempotency_key:
+                (data?.payment_id as string) ?? `${payload.type}_${Date.now()}`,
             });
             break;
         }

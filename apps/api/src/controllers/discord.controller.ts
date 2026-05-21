@@ -17,12 +17,10 @@ export class DiscordController {
     try {
       const { guild_id } = req.query;
       if (!guild_id) {
-        res
-          .status(400)
-          .json({
-            success: false,
-            error: { message: "Missing guild_id from Discord callback" },
-          });
+        res.status(400).json({
+          success: false,
+          error: { message: "Missing guild_id from Discord callback" },
+        });
         return;
       }
       await db
@@ -82,12 +80,10 @@ export class DiscordController {
         )
         .limit(1);
       if (!config || !config.channel_id) {
-        res
-          .status(404)
-          .json({
-            success: false,
-            message: "No active Discord configuration found. Run /setup first!",
-          });
+        res.status(404).json({
+          success: false,
+          message: "No active Discord configuration found. Run /setup first!",
+        });
         return;
       }
       await queueService.dispatchForGuild(config.guild_id, config.channel_id);
