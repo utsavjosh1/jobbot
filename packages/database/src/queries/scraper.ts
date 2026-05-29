@@ -1,4 +1,4 @@
-import { eq, and, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "../index.js";
 import { jobs, scraper_runs } from "../schema.js";
 import type { ScraperRun, ScrapedJobInput } from "@postly/shared-types";
@@ -44,6 +44,7 @@ export const scraperQueries = {
           salary_source: input.salary_source ?? null,
           job_type: input.job_type ?? null,
           remote: input.remote ?? false,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           source: input.source as any,
           job_url: input.job_url ?? null,
           company_url: input.company_url ?? null,
@@ -85,6 +86,7 @@ export const scraperQueries = {
         salary_source: input.salary_source ?? null,
         job_type: input.job_type ?? null,
         remote: input.remote ?? false,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         source: input.source as any,
         source_url: input.source_url,
         job_url: input.job_url ?? null,
@@ -115,9 +117,7 @@ export const scraperQueries = {
    * Batch ingest multiple scraped jobs within a single transaction.
    * Each job is individually upserted by source_url.
    */
-  async batchIngestJobs(
-    inputs: ScrapedJobInput[],
-  ): Promise<{
+  async batchIngestJobs(inputs: ScrapedJobInput[]): Promise<{
     inserted: number;
     updated: number;
     skipped: number;
@@ -214,9 +214,7 @@ export const scraperQueries = {
   /**
    * Get aggregate stats for a cycle.
    */
-  async getCycleStats(
-    cycleNumber: number,
-  ): Promise<{
+  async getCycleStats(cycleNumber: number): Promise<{
     totalJobsScraped: number;
     totalJobsInserted: number;
     sitesWithErrors: number;
