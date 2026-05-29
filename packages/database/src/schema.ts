@@ -932,12 +932,19 @@ export const scraper_runs = pgTable(
     error_message: text("error_message"),
     duration_ms: integer("duration_ms"),
     scraper_version: varchar("scraper_version", { length: 20 }),
-    started_at: timestamp("started_at", { withTimezone: true }).defaultNow().notNull(),
+    started_at: timestamp("started_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
     completed_at: timestamp("completed_at", { withTimezone: true }),
-    created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    created_at: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
   (table) => ({
-    cycleIdx: index("idx_scraper_runs_cycle").on(table.cycle_number, table.site),
+    cycleIdx: index("idx_scraper_runs_cycle").on(
+      table.cycle_number,
+      table.site,
+    ),
     completedIdx: index("idx_scraper_runs_completed").on(table.completed_at),
   }),
 );

@@ -126,12 +126,8 @@
           "tableFrom": "audit_log",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -315,12 +311,8 @@
           "tableFrom": "bot_configs",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -328,10 +320,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "bot_configs_user_id_platform_unique": {
-          "columns": [
-            "user_id",
-            "platform"
-          ],
+          "columns": ["user_id", "platform"],
           "nullsNotDistinct": false,
           "name": "bot_configs_user_id_platform_unique"
         }
@@ -421,12 +410,8 @@
           "tableFrom": "bot_posts",
           "tableTo": "bot_configs",
           "schemaTo": "public",
-          "columnsFrom": [
-            "bot_config_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["bot_config_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -435,12 +420,8 @@
           "tableFrom": "bot_posts",
           "tableTo": "jobs",
           "schemaTo": "public",
-          "columnsFrom": [
-            "job_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["job_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -556,12 +537,8 @@
           "tableFrom": "conversations",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -570,12 +547,8 @@
           "tableFrom": "conversations",
           "tableTo": "resumes",
           "schemaTo": "public",
-          "columnsFrom": [
-            "resume_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -661,12 +634,8 @@
           "tableFrom": "discord_configs",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -674,9 +643,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "discord_configs_guild_id_unique": {
-          "columns": [
-            "guild_id"
-          ],
+          "columns": ["guild_id"],
           "nullsNotDistinct": false,
           "name": "discord_configs_guild_id_unique"
         }
@@ -815,12 +782,8 @@
           "tableFrom": "employer_profiles",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -828,9 +791,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "employer_profiles_user_id_unique": {
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "nullsNotDistinct": false,
           "name": "employer_profiles_user_id_unique"
         }
@@ -908,9 +869,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "email_templates_template_name_unique": {
-          "columns": [
-            "template_name"
-          ],
+          "columns": ["template_name"],
           "nullsNotDistinct": false,
           "name": "email_templates_template_name_unique"
         }
@@ -1064,12 +1023,8 @@
           "tableFrom": "applications",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "seeker_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["seeker_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1078,12 +1033,8 @@
           "tableFrom": "applications",
           "tableTo": "jobs",
           "schemaTo": "public",
-          "columnsFrom": [
-            "job_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["job_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -1092,12 +1043,8 @@
           "tableFrom": "applications",
           "tableTo": "resumes",
           "schemaTo": "public",
-          "columnsFrom": [
-            "resume_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1105,10 +1052,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "applications_seeker_id_job_id_unique": {
-          "columns": [
-            "seeker_id",
-            "job_id"
-          ],
+          "columns": ["seeker_id", "job_id"],
           "nullsNotDistinct": false,
           "name": "applications_seeker_id_job_id_unique"
         }
@@ -1206,12 +1150,8 @@
           "tableFrom": "job_matches",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1220,12 +1160,8 @@
           "tableFrom": "job_matches",
           "tableTo": "resumes",
           "schemaTo": "public",
-          "columnsFrom": [
-            "resume_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resume_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1234,12 +1170,8 @@
           "tableFrom": "job_matches",
           "tableTo": "jobs",
           "schemaTo": "public",
-          "columnsFrom": [
-            "job_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["job_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1247,10 +1179,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "job_matches_user_id_job_id_unique": {
-          "columns": [
-            "user_id",
-            "job_id"
-          ],
+          "columns": ["user_id", "job_id"],
           "nullsNotDistinct": false,
           "name": "job_matches_user_id_job_id_unique"
         }
@@ -1380,12 +1309,8 @@
           "tableFrom": "notifications",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1486,12 +1411,8 @@
           "tableFrom": "otp_codes",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1499,9 +1420,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "otp_codes_user_id_unique": {
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "nullsNotDistinct": false,
           "name": "otp_codes_user_id_unique"
         }
@@ -1611,12 +1530,8 @@
           "tableFrom": "messages",
           "tableTo": "conversations",
           "schemaTo": "public",
-          "columnsFrom": [
-            "conversation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["conversation_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1767,12 +1682,8 @@
           "tableFrom": "payments",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -1781,12 +1692,8 @@
           "tableFrom": "payments",
           "tableTo": "subscriptions",
           "schemaTo": "public",
-          "columnsFrom": [
-            "subscription_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["subscription_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1794,9 +1701,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "payments_idempotency_key_unique": {
-          "columns": [
-            "idempotency_key"
-          ],
+          "columns": ["idempotency_key"],
           "nullsNotDistinct": false,
           "name": "payments_idempotency_key_unique"
         }
@@ -2007,12 +1912,8 @@
           "tableFrom": "subscriptions",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -2020,16 +1921,12 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "subscriptions_user_id_unique": {
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "nullsNotDistinct": false,
           "name": "subscriptions_user_id_unique"
         },
         "subscriptions_dodo_subscription_id_unique": {
-          "columns": [
-            "dodo_subscription_id"
-          ],
+          "columns": ["dodo_subscription_id"],
           "nullsNotDistinct": false,
           "name": "subscriptions_dodo_subscription_id_unique"
         }
@@ -2113,12 +2010,8 @@
           "tableFrom": "sessions",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2126,16 +2019,12 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "sessions_token_hash_unique": {
-          "columns": [
-            "token_hash"
-          ],
+          "columns": ["token_hash"],
           "nullsNotDistinct": false,
           "name": "sessions_token_hash_unique"
         },
         "sessions_refresh_token_hash_unique": {
-          "columns": [
-            "refresh_token_hash"
-          ],
+          "columns": ["refresh_token_hash"],
           "nullsNotDistinct": false,
           "name": "sessions_refresh_token_hash_unique"
         }
@@ -2225,12 +2114,8 @@
           "tableFrom": "subscription_change_log",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -2419,12 +2304,8 @@
           "tableFrom": "seeker_profiles",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2432,9 +2313,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "seeker_profiles_user_id_unique": {
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "nullsNotDistinct": false,
           "name": "seeker_profiles_user_id_unique"
         }
@@ -2575,12 +2454,8 @@
           "tableFrom": "resumes",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2739,12 +2614,8 @@
           "tableFrom": "application_status_history",
           "tableTo": "applications",
           "schemaTo": "public",
-          "columnsFrom": [
-            "application_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["application_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2753,12 +2624,8 @@
           "tableFrom": "application_status_history",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["changed_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2919,9 +2786,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "users_email_unique": {
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "nullsNotDistinct": false,
           "name": "users_email_unique"
         }
@@ -3211,12 +3076,8 @@
           "tableFrom": "jobs",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "employer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["employer_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -3296,12 +3157,8 @@
           "tableFrom": "token_usage",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3330,11 +3187,7 @@
     },
     "public.bot_platform": {
       "name": "bot_platform",
-      "values": [
-        "discord",
-        "reddit",
-        "twitter"
-      ],
+      "values": ["discord", "reddit", "twitter"],
       "schema": "public"
     },
     "public.job_source": {
@@ -3354,51 +3207,27 @@
     },
     "public.message_role": {
       "name": "message_role",
-      "values": [
-        "user",
-        "assistant",
-        "system"
-      ],
+      "values": ["user", "assistant", "system"],
       "schema": "public"
     },
     "public.notification_channel": {
       "name": "notification_channel",
-      "values": [
-        "email",
-        "push",
-        "in_app"
-      ],
+      "values": ["email", "push", "in_app"],
       "schema": "public"
     },
     "public.notification_status": {
       "name": "notification_status",
-      "values": [
-        "pending",
-        "sent",
-        "failed",
-        "bounced",
-        "opened"
-      ],
+      "values": ["pending", "sent", "failed", "bounced", "opened"],
       "schema": "public"
     },
     "public.payment_status": {
       "name": "payment_status",
-      "values": [
-        "pending",
-        "succeeded",
-        "failed",
-        "refunded",
-        "disputed"
-      ],
+      "values": ["pending", "succeeded", "failed", "refunded", "disputed"],
       "schema": "public"
     },
     "public.subscription_plan": {
       "name": "subscription_plan",
-      "values": [
-        "seeker",
-        "employer",
-        "discord_owner"
-      ],
+      "values": ["seeker", "employer", "discord_owner"],
       "schema": "public"
     },
     "public.subscription_status": {
@@ -3415,12 +3244,7 @@
     },
     "public.user_role": {
       "name": "user_role",
-      "values": [
-        "job_seeker",
-        "employer",
-        "admin",
-        "discord_owner"
-      ],
+      "values": ["job_seeker", "employer", "admin", "discord_owner"],
       "schema": "public"
     }
   },

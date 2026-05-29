@@ -48,7 +48,9 @@ type BotJobData = DailyDispatchData | DiscordMessageData | BotMessageData;
 /**
  * Fetch the top N active jobs, newest first.  Single query, O(1) in code.
  */
-async function fetchLatestJobs(limit = MAX_JOBS_PER_DISPATCH): Promise<JobRow[]> {
+async function fetchLatestJobs(
+  limit = MAX_JOBS_PER_DISPATCH,
+): Promise<JobRow[]> {
   return (await db
     .select({
       id: jobs.id,
@@ -159,10 +161,7 @@ async function handleDailyDispatch(client: Client): Promise<void> {
     })
     .from(bot_configs)
     .where(
-      and(
-        eq(bot_configs.platform, "discord"),
-        eq(bot_configs.is_active, true),
-      ),
+      and(eq(bot_configs.platform, "discord"), eq(bot_configs.is_active, true)),
     );
 
   logger.info("Daily dispatch: processing guilds", { count: configs.length });
