@@ -1,0 +1,6 @@
+# Add your proxy servers here (one per line)
+# Format: http://user:pass@host:port or http://host:port
+# Lines starting with # are ignored
+#
+# If left empty, the scraper will auto-fetch free proxies from public sources
+# (configurable via config.yaml → proxies → auto_fetch)

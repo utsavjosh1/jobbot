@@ -243,3 +243,68 @@ export interface JobSearchFilters {
 }
 
 export type BotPlatform = "discord" | "reddit" | "twitter";
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SCRAPER TYPES (JobSpy Integration)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type ScraperSource =
+  | "indeed"
+  | "linkedin"
+  | "zip_recruiter"
+  | "glassdoor"
+  | "google_jobs"
+  | "bayt"
+  | "naukri"
+  | "bdjobs";
+
+export interface ScrapedJobInput {
+  title: string;
+  company_name: string;
+  description: string;
+  location?: string | null;
+  salary_min?: number | null;
+  salary_max?: number | null;
+  salary_interval?: string | null;
+  salary_currency?: string | null;
+  salary_source?: string | null;
+  job_type?: string | null;
+  remote?: boolean;
+  source: ScraperSource;
+  source_url: string;
+  job_url?: string | null;
+  company_url?: string | null;
+  company_logo_url?: string | null;
+  company_description?: string | null;
+  company_industry?: string | null;
+  company_num_employees?: string | null;
+  company_revenue?: string | null;
+  company_rating?: number | null;
+  company_reviews_count?: number | null;
+  skills_required?: string[] | null;
+  experience_required?: string | null;
+  experience_range?: string | null;
+  vacancy_count?: number | null;
+  work_from_home_type?: string | null;
+  job_function?: string | null;
+  posted_at?: string | null;
+  fingerprint?: string | null;
+}
+
+export interface ScraperRun {
+  id: string;
+  cycle_number: number;
+  search_term: string;
+  location: string;
+  site: string;
+  jobs_scraped: number;
+  jobs_inserted: number;
+  jobs_skipped: number;
+  proxy_count: number;
+  error_message?: string | null;
+  duration_ms?: number | null;
+  scraper_version?: string | null;
+  started_at: Date;
+  completed_at?: Date | null;
+  created_at: Date;
+}

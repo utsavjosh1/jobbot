@@ -19,6 +19,7 @@ import chatRoutes from "./routes/chat.routes.js";
 import botRoutes from "./routes/bot.routes.js";
 import dodoRoutes from "./routes/dodo.routes.js";
 import applicationRoutes from "./routes/application.routes.js";
+import scraperRoutes from "./routes/scraper.routes.js";
 import { queueService } from "./services/queue.service.js";
 
 const app = express();
@@ -183,6 +184,7 @@ app.use("/api/v1/chat", aiRateLimiter, chatRoutes);
 app.use("/api/v1/bots", botRoutes);
 app.use("/api/v1/payments", dodoRoutes);
 app.use("/api/v1/applications", applicationRoutes);
+app.use("/api/v1/scraper", scraperRoutes);
 
 // Static files
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));

@@ -1,6 +1,0 @@
-# Discord Bot Workers Dependencies
-discord.py==2.3.2
-python-dotenv==1.0.1
-asyncpg==0.29.0
-python-json-logger==2.0.7
-redis==5.0.1

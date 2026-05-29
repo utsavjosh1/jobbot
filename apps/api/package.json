@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "bot:dev": "tsx watch src/bot/index.ts",
+    "bot:start": "node dist/bot/index.js",
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint src",
@@ -21,6 +23,7 @@
     "bcrypt": "^6.0.0",
     "bullmq": "^5.76.4",
     "compression": "^1.8.1",
+    "discord.js": "^14.18.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",

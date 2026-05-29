@@ -1,0 +1,291 @@
+# ============================================================================
+# Postly Scraper — Configuration
+# ============================================================================
+# The scraper runs 24/7, cycling through search terms × locations across all
+# supported platforms. Results are written directly to the PostgreSQL database.
+# ============================================================================
+
+# ─── DATABASE CONNECTION ──────────────────────────────────────────────────────
+# Override via environment variables: DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
+database:
+  host: "localhost"
+  port: 5432
+  name: "postly"
+  user: "postgres"
+  password: "postgres"
+  # Connection pool settings
+  min_connections: 2
+  max_connections: 5
+
+# ─── SCRAPER ENGINE ───────────────────────────────────────────────────────────
+search:
+  site_name:
+    - linkedin
+    - indeed
+    - zip_recruiter
+    - glassdoor
+    - google
+    - bayt
+    - naukri
+    - bdjobs
+
+  search_terms:
+    # Technology
+    - "software engineer"
+    - "senior software engineer"
+    - "full stack developer"
+    - "frontend developer"
+    - "backend developer"
+    - "data scientist"
+    - "data engineer"
+    - "machine learning engineer"
+    - "devops engineer"
+    - "site reliability engineer"
+    - "cloud engineer"
+    - "cloud architect"
+    - "cybersecurity analyst"
+    - "security engineer"
+    - "network engineer"
+    - "systems administrator"
+    - "IT support specialist"
+    - "database administrator"
+    - "QA engineer"
+    - "test automation engineer"
+    - "mobile developer"
+    - "iOS developer"
+    - "Android developer"
+    - "game developer"
+    - "embedded software engineer"
+    - "scrum master"
+    - "product owner"
+    - "technical writer"
+    - "IT project manager"
+    # Data & Analytics
+    - "data analyst"
+    - "business intelligence analyst"
+    - "analytics manager"
+    - "statistician"
+    - "data architect"
+    # Product & Design
+    - "product manager"
+    - "product designer"
+    - "UX designer"
+    - "UI designer"
+    - "UX researcher"
+    - "graphic designer"
+    - "visual designer"
+    - "motion designer"
+    - "art director"
+    - "creative director"
+    # Business & Management
+    - "project manager"
+    - "program manager"
+    - "portfolio manager"
+    - "business analyst"
+    - "management consultant"
+    - "strategy manager"
+    - "operations manager"
+    - "supply chain manager"
+    - "logistics coordinator"
+    - "procurement manager"
+    # Marketing & Sales
+    - "marketing manager"
+    - "digital marketing specialist"
+    - "SEO specialist"
+    - "content marketing manager"
+    - "social media manager"
+    - "brand manager"
+    - "sales representative"
+    - "account executive"
+    - "sales manager"
+    - "business development manager"
+    - "customer success manager"
+    - "account manager"
+    - "sales engineer"
+    # Finance & Accounting
+    - "financial analyst"
+    - "investment banker"
+    - "accountant"
+    - "CPA"
+    - "auditor"
+    - "tax associate"
+    - "tax manager"
+    - "financial manager"
+    - "finance director"
+    - "controller"
+    - "risk analyst"
+    - "quantitative analyst"
+    - "wealth manager"
+    # Human Resources
+    - "HR manager"
+    - "HR generalist"
+    - "talent acquisition specialist"
+    - "recruiter"
+    - "compensation analyst"
+    - "learning and development manager"
+    # Healthcare
+    - "registered nurse"
+    - "nurse practitioner"
+    - "physician assistant"
+    - "medical doctor"
+    - "surgeon"
+    - "pharmacist"
+    - "pharmacy technician"
+    - "medical assistant"
+    - "dentist"
+    - "physical therapist"
+    - "occupational therapist"
+    - "radiologist"
+    - "lab technician"
+    - "healthcare administrator"
+    - "caregiver"
+    - "veterinarian"
+    # Engineering (Non-Software)
+    - "mechanical engineer"
+    - "electrical engineer"
+    - "civil engineer"
+    - "chemical engineer"
+    - "industrial engineer"
+    - "environmental engineer"
+    - "aerospace engineer"
+    - "biomedical engineer"
+    - "structural engineer"
+    - "automation engineer"
+    - "manufacturing engineer"
+    - "process engineer"
+    # Construction & Trades
+    - "construction manager"
+    - "project estimator"
+    - "architect"
+    - "electrician"
+    - "plumber"
+    - "HVAC technician"
+    - "welder"
+    - "carpenter"
+    # Legal & Compliance
+    - "lawyer"
+    - "attorney"
+    - "paralegal"
+    - "legal assistant"
+    - "corporate counsel"
+    - "compliance officer"
+    # Education
+    - "teacher"
+    - "professor"
+    - "lecturer"
+    - "teaching assistant"
+    - "school principal"
+    - "instructional designer"
+    - "librarian"
+    # Science & Research
+    - "research scientist"
+    - "research assistant"
+    - "clinical research coordinator"
+    - "biologist"
+    - "chemist"
+    # Media & Communications
+    - "content writer"
+    - "copywriter"
+    - "editor"
+    - "journalist"
+    - "public relations specialist"
+    - "communications manager"
+    - "video editor"
+    - "photographer"
+    # Hospitality
+    - "hotel manager"
+    - "restaurant manager"
+    - "chef"
+    - "event coordinator"
+    # Administrative
+    - "administrative assistant"
+    - "executive assistant"
+    - "office manager"
+    - "receptionist"
+    - "customer service representative"
+    - "data entry clerk"
+    # Internships & Entry Level
+    - "intern"
+    - "software engineer intern"
+    - "data science intern"
+    - "marketing intern"
+    - "finance intern"
+    - "engineering intern"
+    - "new grad"
+    - "entry level"
+    # Remote Specific
+    - "remote software engineer"
+    - "remote data analyst"
+    - "remote customer service"
+    - "remote marketing"
+    - "remote writer"
+
+  google_search_terms:
+    - "software engineer jobs"
+    - "data scientist jobs"
+    - "product manager jobs"
+    - "marketing jobs"
+    - "sales jobs"
+    - "finance jobs"
+    - "healthcare jobs"
+    - "engineering jobs"
+    - "design jobs"
+    - "internship jobs"
+    - "entry level jobs"
+    - "remote jobs"
+    - "part time jobs"
+    - "contract jobs"
+
+  locations:
+    - "United States"
+    - "United Kingdom"
+    - "Canada"
+    - "Germany"
+    - "Australia"
+    - "India"
+    - "France"
+    - "Netherlands"
+    - "Singapore"
+    - "UAE"
+
+  country_indeed: "USA"
+  job_type: ~
+  is_remote: false
+  distance: ~
+  hours_old: ~
+  easy_apply: ~
+  results_wanted: 50
+  linkedin_fetch_description: false
+  enforce_annual_salary: false
+  description_format: "markdown"
+
+# ─── SCHEDULING ─────────────────────────────────────────────────────────────
+schedule:
+  interval_seconds: 7200    # 2 hours between cycles
+  jitter_percent: 20        # ±20% random variance
+
+# ─── PROXY CONFIG ───────────────────────────────────────────────────────────
+proxies:
+  method: both               # 'file', 'auto', or 'both'
+  file_path: "proxies.txt"
+  auto_fetch:
+    enabled: true
+    refresh_interval: 1800
+    max_proxies: 80
+    test_timeout: 5
+    sources: ~
+
+# ─── USER AGENT ROTATION ────────────────────────────────────────────────────
+user_agent:
+  rotate: true
+  custom_list: []
+
+# ─── REQUEST DELAYS ─────────────────────────────────────────────────────────
+delays:
+  pre_cycle_min: 3
+  pre_cycle_max: 10
+
+# ─── LOGGING ────────────────────────────────────────────────────────────────
+logging:
+  level: "INFO"              # DEBUG, INFO, WARNING, ERROR
+  format: "structured"       # 'structured' (JSON) or 'text'

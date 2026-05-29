@@ -29,6 +29,9 @@ export {
   VOYAGE_API_KEY,
   VOYAGE_MODEL,
 
+  // Discord
+  DISCORD_BOT_TOKEN,
+
   // Dodo Payments
   DODO_PAYMENTS_API_KEY,
   DODO_PAYMENTS_WEBHOOK_KEY,

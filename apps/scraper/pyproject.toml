@@ -1,0 +1,21 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "postly-scraper"
+version = "1.0.0"
+description = "Postly job scraper — 24/7 multi-platform job data collection engine"
+authors = ["Postly Team"]
+
+[[tool.poetry.packages]]
+include = "jobspy"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+psycopg2-binary = "^2.9.9"
+pyyaml = "^6.0"
+requests = "^2.31.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "*"

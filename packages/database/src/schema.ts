@@ -81,6 +81,12 @@ export const jobSourceEnum = pgEnum("job_source", [
   "internal",
   "indeed",
   "linkedin",
+  "zip_recruiter",
+  "glassdoor",
+  "google_jobs",
+  "bayt",
+  "naukri",
+  "bdjobs",
   "company_direct",
   "generic",
 ]);
@@ -286,6 +292,22 @@ export const jobs = pgTable(
     remote: boolean("remote").default(false),
     source: jobSourceEnum("source").notNull(),
     source_url: text("source_url"),
+    // Scraper-enriched fields
+    job_url: text("job_url"),
+    company_url: text("company_url"),
+    salary_interval: varchar("salary_interval", { length: 20 }),
+    salary_currency: varchar("salary_currency", { length: 10 }),
+    salary_source: varchar("salary_source", { length: 20 }),
+    company_industry: varchar("company_industry", { length: 255 }),
+    company_num_employees: varchar("company_num_employees", { length: 100 }),
+    company_revenue: varchar("company_revenue", { length: 100 }),
+    company_rating: decimal("company_rating", { precision: 3, scale: 2 }),
+    company_reviews_count: integer("company_reviews_count"),
+    experience_range: varchar("experience_range", { length: 100 }),
+    vacancy_count: integer("vacancy_count"),
+    work_from_home_type: varchar("work_from_home_type", { length: 50 }),
+    job_function: varchar("job_function", { length: 255 }),
+    // Core fields
     embedding: vector("embedding", { dimensions: 1024 }),
     skills_required: jsonb("skills_required"),
     experience_required: varchar("experience_required", { length: 100 }),
@@ -304,6 +326,9 @@ export const jobs = pgTable(
     activeIdx: index("idx_jobs_active").on(table.is_active),
     sourceIdx: index("idx_jobs_source").on(table.source),
     employerIdx: index("idx_jobs_employer").on(table.employer_id),
+    sourceUrlIdx: index("idx_jobs_source_url")
+      .on(table.source_url)
+      .where(sql`${table.source_url} IS NOT NULL`),
     remoteActiveIdx: index("idx_jobs_remote_active")
       .on(table.remote, table.is_active)
       .where(sql`${table.is_active} = true`),
@@ -735,7 +760,7 @@ export const token_usage = pgTable(
   (table) => ({
     userMonthIdx: uniqueIndex("idx_token_usage_monthly").on(
       table.user_id,
-      sql`date_trunc('month', ${table.window_start})`,
+      sql`date_trunc('month', ${table.window_start} at time zone 'UTC')`,
     ),
   }),
 );
@@ -887,6 +912,35 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 export const sessionsRelations = relations(sessions, ({ one }) => ({
   user: one(users, { fields: [sessions.user_id], references: [users.id] }),
 }));
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SCRAPER TRACKING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const scraper_runs = pgTable(
+  "scraper_runs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    cycle_number: integer("cycle_number").notNull(),
+    search_term: varchar("search_term", { length: 500 }).notNull(),
+    location: varchar("location", { length: 255 }).notNull(),
+    site: varchar("site", { length: 50 }).notNull(),
+    jobs_scraped: integer("jobs_scraped").default(0).notNull(),
+    jobs_inserted: integer("jobs_inserted").default(0).notNull(),
+    jobs_skipped: integer("jobs_skipped").default(0).notNull(),
+    proxy_count: integer("proxy_count").default(0).notNull(),
+    error_message: text("error_message"),
+    duration_ms: integer("duration_ms"),
+    scraper_version: varchar("scraper_version", { length: 20 }),
+    started_at: timestamp("started_at", { withTimezone: true }).defaultNow().notNull(),
+    completed_at: timestamp("completed_at", { withTimezone: true }),
+    created_at: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    cycleIdx: index("idx_scraper_runs_cycle").on(table.cycle_number, table.site),
+    completedIdx: index("idx_scraper_runs_completed").on(table.completed_at),
+  }),
+);
 
 export const planFeaturesRelations = relations(plan_features, ({ one }) => ({
   subscription: one(subscriptions, {

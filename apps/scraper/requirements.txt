@@ -1,0 +1,13 @@
+# Core dependencies
+psycopg2-binary>=2.9.9
+pyyaml>=6.0
+requests>=2.31.0
+
+# jobspy dependencies (needed for the local editable install)
+pandas>=2.1.0
+numpy>=1.26.0
+pydantic>=2.3.0
+beautifulsoup4>=4.12.2
+tls-client>=1.0.1
+markdownify>=1.1.0
+regex>=2024.4.28

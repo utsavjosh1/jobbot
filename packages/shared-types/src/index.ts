@@ -20,6 +20,9 @@ import {
   SeekerProfileData,
   SubscriptionStatus,
   DodoSubscriptionPayload,
+  ScraperSource,
+  ScrapedJobInput,
+  ScraperRun,
 } from "./domain.js";
 
 export type {
@@ -44,6 +47,9 @@ export type {
   SeekerProfileData,
   SubscriptionStatus,
   DodoSubscriptionPayload,
+  ScraperSource,
+  ScrapedJobInput,
+  ScraperRun,
 };
 
 export type ConversationState =

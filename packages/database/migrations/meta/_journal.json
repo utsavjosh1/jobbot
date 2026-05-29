@@ -64,6 +64,20 @@
       "when": 1777396102324,
       "tag": "0008_bumpy_mac_gargan",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1779383809443,
+      "tag": "0009_sync_schema_to_db",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1779383860948,
+      "tag": "0010_fresh_wonder_man",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,246 @@
+# =============================================================================
+# POSTLY — Production Docker Compose
+# =============================================================================
+# Single-command deployment:
+#   docker compose up -d              # Start everything
+#   docker compose up -d api postgres redis  # Core only
+#   docker compose logs -f scraper    # Watch scraper logs
+#   docker compose ps                 # Check service status
+#
+# Services:
+#   postgres  — PostgreSQL 16 + pgvector (always)
+#   redis     — Redis 7 (always)
+#   api       — Express API server (always)
+#   scraper   — JobSpy 24/7 data collection (enabled by default)
+#   bot       — Discord bot (only if DISCORD_BOT_TOKEN is set)
+# =============================================================================
+
+services:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # DATABASE — PostgreSQL 16 with pgvector extension
+  # ═══════════════════════════════════════════════════════════════════════════
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: postly-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postly}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Database password required}
+      POSTGRES_DB: ${DB_NAME:-postly}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./packages/database/migrations:/docker-entrypoint-initdb.d:ro
+    command: >
+      postgres
+      -c shared_buffers=256MB
+      -c effective_cache_size=512MB
+      -c work_mem=16MB
+      -c maintenance_work_mem=64MB
+      -c max_connections=50
+      -c random_page_cost=1.1
+      -c wal_compression=on
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postly}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 768M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - postly-network
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # REDIS — Job queue & caching
+  # ═══════════════════════════════════════════════════════════════════════════
+  redis:
+    image: redis:7-alpine
+    container_name: postly-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy noeviction
+      --appendonly yes
+      --save 60 1
+      --loglevel warning
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.15"
+          memory: 320M
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+    networks:
+      - postly-network
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # API — Express.js backend
+  # ═══════════════════════════════════════════════════════════════════════════
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: postly-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: "--max-old-space-size=384"
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-postly}
+      DB_USER: ${DB_USER:-postly}
+      DB_PASSWORD: ${DB_PASSWORD:?Database password required}
+      DATABASE_URL: postgresql://${DB_USER:-postly}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-postly}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:?JWT secret required}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT refresh secret required}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-30d}
+      API_PORT: "3000"
+      WEB_URL: ${WEB_URL:-http://localhost}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      VOYAGE_API_KEY: ${VOYAGE_API_KEY:-}
+    ports:
+      - "${API_PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://127.0.0.1:3000/health', (r) => {if(r.statusCode!==200)process.exit(1)}).on('error',()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - postly-network
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SCRAPER — JobSpy 24/7 data collection engine
+  # ═══════════════════════════════════════════════════════════════════════════
+  scraper:
+    build:
+      context: ./apps/scraper
+      dockerfile: Dockerfile
+    container_name: postly-scraper
+    restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-postly}
+      DB_USER: ${DB_USER:-postly}
+      DB_PASSWORD: ${DB_PASSWORD:?Database password required}
+      TZ: UTC
+      SCRAPER_INTERVAL_SECONDS: ${SCRAPER_INTERVAL_SECONDS:-7200}
+    volumes:
+      - ./apps/scraper/config.yaml:/app/config.yaml:ro
+      - ./apps/scraper/proxies.txt:/app/proxies.txt:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - postly-network
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # BOT — Discord job posting bot (OPTIONAL)
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Only deploys if DISCORD_BOT_TOKEN is set in .env
+  bot:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: postly-bot
+    restart: unless-stopped
+    profiles: ["full", "bot"]  # excluded from 'core' profile
+    command:
+      ["node", "--max-old-space-size=200", "apps/api/dist/bot/index.js"]
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-postly}
+      DB_USER: ${DB_USER:-postly}
+      DB_PASSWORD: ${DB_PASSWORD:?Database password required}
+      DATABASE_URL: postgresql://${DB_USER:-postly}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-postly}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:-}
+      WEB_URL: ${WEB_URL:-http://localhost}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - postly-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  postly-network:
+    driver: bridge

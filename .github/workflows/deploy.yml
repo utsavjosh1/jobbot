@@ -45,27 +45,6 @@ jobs:
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/postly-api:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/postly-api:buildcache,mode=max
 
-      - name: Extract metadata for Bot
-        id: meta-bot
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/postly-bot
-          tags: |
-            type=ref,event=pr
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=sha
-
-      - name: Build and push Bot
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: apps/bot/Dockerfile
-          push: true
-          tags: ${{ steps.meta-bot.outputs.tags }}
-          labels: ${{ steps.meta-bot.outputs.labels }}
-          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/postly-bot:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/postly-bot:buildcache,mode=max
-
   deploy:
     name: Deploy to VPS
     runs-on: ubuntu-latest
