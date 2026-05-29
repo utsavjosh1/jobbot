@@ -124,11 +124,9 @@ async function markInactive(guildId: string): Promise<void> {
 // Dispatch fallback – safety net every 6h at 9/15/21 UTC
 // ---------------------------------------------------------------------------
 
-let fallbackTimer: ReturnType<typeof setInterval> | null = null;
-
 function scheduleFallbackDispatch(client: Client): void {
   // Check every hour, but only fire at the right windows
-  fallbackTimer = setInterval(async () => {
+  setInterval(async () => {
     const hour = new Date().getUTCHours();
     if (hour !== 9 && hour !== 15 && hour !== 21) return;
 

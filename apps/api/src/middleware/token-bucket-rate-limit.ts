@@ -58,8 +58,8 @@ export const tokenBucketRateLimiter = (config: RateLimitConfig) => {
       }
 
       const key = `${keyPrefix}:${identifier}`;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const [grantedResult, currentTokensResult] = await (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         redis as any
       ).consumeTokenBucket(key, maxTokens, refillRateSec, Date.now(), 1);
 
