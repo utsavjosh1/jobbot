@@ -49,10 +49,7 @@ async function refreshCache(): Promise<void> {
     })
     .from(bot_configs)
     .where(
-      and(
-        eq(bot_configs.platform, "discord"),
-        eq(bot_configs.is_active, true),
-      ),
+      and(eq(bot_configs.platform, "discord"), eq(bot_configs.is_active, true)),
     );
 
   guildCache.clear();
@@ -162,14 +159,9 @@ function scheduleFallbackDispatch(client: Client): void {
     }
   }, 3_600_000); // Every hour
 
-  logger.info("Fallback dispatch loop scheduled (every 1h, fires at 9/15/21 UTC)");
-}
-
-function stopFallbackDispatch(): void {
-  if (fallbackTimer) {
-    clearInterval(fallbackTimer);
-    fallbackTimer = null;
-  }
+  logger.info(
+    "Fallback dispatch loop scheduled (every 1h, fires at 9/15/21 UTC)",
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -229,8 +221,7 @@ export function createDiscordClient(): Client {
 
     if (!hasPerm) {
       await cmd.reply({
-        content:
-          "\u274c You need 'Manage Server' permissions to do this.",
+        content: "\u274c You need 'Manage Server' permissions to do this.",
         ephemeral: true,
       });
       return;
